@@ -2,17 +2,25 @@
 ref class Gate
 {
 private:
-	bool Closed = true;
+	bool opened = false;
 public:
 	double is_opened() {
-		return (Closed ? false : true);
+		return (opened ? true : false);
 	}
 	bool open() {
-		Closed = false;
+		opened = true;
+		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+		sa->WriteLine("Gate:");
+		sa->WriteLine("Opened=" + opened);
+		sa->Close();
 		return true;
 	}
 	bool close() {
-		Closed = true;
+		opened = false;
+		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+		sa->WriteLine("Gate:");
+		sa->WriteLine("Opened=" + opened);
+		sa->Close();
 		return true;
 	}
 };

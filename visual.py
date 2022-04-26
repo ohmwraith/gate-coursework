@@ -144,7 +144,6 @@ class Car(pygame.sprite.Sprite):
         if self.speedy != 0:
             self.rect.y += self.speedy
         if self.rect.bottom < 0 or self.rect.top > HEIGHT:
-            gate.close()
             self.kill()
 
 #заполнение групп спрайтов
@@ -190,8 +189,7 @@ while running:
         print(array)
         for dictionary in array:
             if dictionary.get('Object') == 'Gate':
-                if dictionary.get('Opened') == 'true':
-                    print("Шлагбаум поднят")
+                if dictionary.get('Opened') == 'True':
                     gate.open()
                 else:
                     gate.close()
@@ -204,7 +202,14 @@ while running:
                 all_sprites.add(car)
                 if dictionary.get('Order') == 'Go':
                     car.move_to_parking()
+                if dictionary.get('Direction') == "down":
+                    car.move_to_parking()
         previous_data = data
+        try:
+            Interface.clean_interface()
+        except PermissionError:
+            while not Interface.clean_interface():
+                print("Ожидание доступа")
     # Обновление
     all_sprites.update()
     screen.fill(BLACK)

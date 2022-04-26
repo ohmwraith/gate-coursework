@@ -4,6 +4,8 @@
 #include<ctime>
 #include<cmath>
 #include"Car.h"
+#include"Gate.h"
+#include"Parking.h"
 //#include"Classes.cpp"
 
 
@@ -131,6 +133,7 @@ namespace GateCommander {
 			this->gate_status_trackbar->Name = L"gate_status_trackbar";
 			this->gate_status_trackbar->Size = System::Drawing::Size(122, 45);
 			this->gate_status_trackbar->TabIndex = 2;
+			this->gate_status_trackbar->Scroll += gcnew System::EventHandler(this, &MyForm::gate_status_trackbar_Scroll);
 			// 
 			// log_listbox
 			// 
@@ -148,6 +151,7 @@ namespace GateCommander {
 			this->space_free_button->TabIndex = 4;
 			this->space_free_button->Text = L"Освободить";
 			this->space_free_button->UseVisualStyleBackColor = true;
+			this->space_free_button->Click += gcnew System::EventHandler(this, &MyForm::space_free_button_Click);
 			// 
 			// car_create_button
 			// 
@@ -157,6 +161,7 @@ namespace GateCommander {
 			this->car_create_button->TabIndex = 5;
 			this->car_create_button->Text = L"Машина";
 			this->car_create_button->UseVisualStyleBackColor = true;
+			this->car_create_button->Click += gcnew System::EventHandler(this, &MyForm::car_create_button_Click);
 			// 
 			// total_input_textbox
 			// 
@@ -293,16 +298,22 @@ namespace GateCommander {
 //Инициализация переменных
 int TOTAL = NULL, FREE = NULL;
 bool AUTOMATE = false, VISUALS = false, INIT = false;
-	private: System::Void apply_changes_button_Click(System::Object^ sender, System::EventArgs^ e) {
-		try {
-			TOTAL = Convert::ToInt32(total_input_textbox->Text);
-			FREE = Convert::ToInt32(free_input_textbox->Text);
-			INIT = true;
-		}
-		catch (...) {
-			MessageBox::Show("Не удалось преобразовать введенные данные", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
-		}
+Parking^ parking = gcnew Parking(300, 100);
+Gate^ gate = gcnew Gate();
+
+private: System::Void apply_changes_button_Click(System::Object^ sender, System::EventArgs^ e) {
+	try {
+		TOTAL = Convert::ToInt32(total_input_textbox->Text);
+		FREE = Convert::ToInt32(free_input_textbox->Text);
+		parking->set_total_places(TOTAL);
+		parking->set_occupied_places(TOTAL - FREE);
+		parking->send_parametres();
+		INIT = true;
 	}
+	catch (...) {
+		MessageBox::Show("Не удалось преобразовать введенные данные", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+	}
+}
 private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
 	if (toggle_visualisation_checkbox->Checked) {
 		VISUALS = true;
@@ -332,7 +343,31 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 }
 private: System::Void clear_log_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	log_listbox->Items->Clear();
+	
+}
+private: System::Void car_create_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	Car^ car = gcnew Car(12);
+	car->incoming_car_request();
+	FREE--;
+	free_input_textbox->Text = FREE.ToString();
+	parking->set_occupied_places(TOTAL - FREE);
+	parking->send_parametres();
+}
+private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System::EventArgs^ e) {
+	if (gate_status_trackbar->Value == 1) {
+		gate->open();
+	}
+	else {
+		gate->close();
+	}
+}
+private: System::Void space_free_button_Click(System::Object^ sender, System::EventArgs^ e) {
+	Car^ car = gcnew Car(11);
+	car->leaving_car_request();
+	FREE++;
+	free_input_textbox->Text = FREE.ToString();
+	parking->set_occupied_places(TOTAL - FREE);
+	parking->send_parametres();
 }
 };
 }

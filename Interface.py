@@ -20,7 +20,10 @@ def extract_data(data):
             array[current_object_pointer].setdefault(line.split("=")[0], line.split("=")[1])
 
     return array
-
-
+def clean_interface():
+    with open("interface.txt", "w") as interface:
+        interface.truncate()
+        interface.close()
+    return True
 if __name__ == "__main__":
     print(extract_data(get_lines()))

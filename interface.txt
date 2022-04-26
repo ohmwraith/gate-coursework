@@ -1,9 +1,0 @@
-Gate:
-Opened=true
-Parking:
-Total=130
-Free=30
-Car:
-Direction=up
-Order=Stay
-Number=991
