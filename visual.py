@@ -139,8 +139,8 @@ class Car(pygame.sprite.Sprite):
         return self.number
     def update(self):
         # убить, если он заходит за верхнюю часть экрана
-        if self.direction == "up" and gate.is_open():
-            self.move_to_parking()
+        #if self.direction == "up" and gate.is_open():
+            #self.move_to_parking()
         if self.speedy != 0:
             self.rect.y += self.speedy
         if self.rect.bottom < 0 or self.rect.top > HEIGHT:
@@ -186,8 +186,18 @@ while running:
     data = Interface.get_lines()
     if data != previous_data:
         array = Interface.extract_data(data)
-        print(array)
+        if len(array) > 0:
+            print("Получены указания: " + str(array))
         for dictionary in array:
+            if dictionary.get('Object') == 'Global':
+                if dictionary.get('Event') == 'Clear':
+                    gate.close()
+                    total = None
+                    free = None
+                    for obj in car_sprite_group:
+                        car_sprite_group.remove(obj)
+                        all_sprites.remove(obj)
+
             if dictionary.get('Object') == 'Gate':
                 if dictionary.get('Opened') == 'True':
                     gate.open()
@@ -197,19 +207,24 @@ while running:
                 total = int(dictionary.get('Total'))
                 free = int(dictionary.get('Free'))
             if dictionary.get('Object') == 'Car':
-                car = Car(dictionary.get('Direction'))
-                car_sprite_group.add(car)
-                all_sprites.add(car)
-                if dictionary.get('Order') == 'Go':
-                    car.move_to_parking()
+                if dictionary.get('Event') == 'Create':
+                    car = Car(dictionary.get('Direction'))
+                    car_sprite_group.add(car)
+                    all_sprites.add(car)
+                if dictionary.get('Event') == 'Forward':
+                    if len(car_sprite_group) > 0:
+                        car.move_to_parking()
                 if dictionary.get('Direction') == "down":
                     car.move_to_parking()
         previous_data = data
         try:
             Interface.clean_interface()
         except PermissionError:
-            while not Interface.clean_interface():
-                print("Ожидание доступа")
+            try:
+                while not Interface.clean_interface():
+                    print("Ожидание доступа")
+            except PermissionError:
+                print("Не удалось получить доступ к файлу, синронизуйтесь и попробуйте отправлять запросы медленней")
     # Обновление
     all_sprites.update()
     screen.fill(BLACK)

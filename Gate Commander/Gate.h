@@ -15,6 +15,10 @@ public:
 		opened = false;
 		return true;
 	}
+	bool toggle() {
+		opened ? opened = false : opened = true;
+		return true;
+	}
 	void send_parametres() {
 		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
 		sa->WriteLine("Gate:");

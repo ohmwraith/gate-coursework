@@ -79,6 +79,7 @@ namespace GateCommander {
 	private: System::Windows::Forms::Label^ label3;
 	private: System::Windows::Forms::Button^ apply_changes_button;
 	private: System::Windows::Forms::Button^ clear_log_button;
+	private: System::Windows::Forms::Button^ car_forward_button;
 
 
 	private:
@@ -107,6 +108,7 @@ namespace GateCommander {
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->manage_groupbox = (gcnew System::Windows::Forms::GroupBox());
+			this->car_forward_button = (gcnew System::Windows::Forms::Button());
 			this->label4 = (gcnew System::Windows::Forms::Label());
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->clear_log_button = (gcnew System::Windows::Forms::Button());
@@ -140,12 +142,13 @@ namespace GateCommander {
 			this->log_listbox->FormattingEnabled = true;
 			this->log_listbox->Location = System::Drawing::Point(24, 131);
 			this->log_listbox->Name = L"log_listbox";
+			this->log_listbox->ScrollAlwaysVisible = true;
 			this->log_listbox->Size = System::Drawing::Size(464, 95);
 			this->log_listbox->TabIndex = 3;
 			// 
 			// space_free_button
 			// 
-			this->space_free_button->Location = System::Drawing::Point(39, 163);
+			this->space_free_button->Location = System::Drawing::Point(39, 137);
 			this->space_free_button->Name = L"space_free_button";
 			this->space_free_button->Size = System::Drawing::Size(122, 38);
 			this->space_free_button->TabIndex = 4;
@@ -155,7 +158,7 @@ namespace GateCommander {
 			// 
 			// car_create_button
 			// 
-			this->car_create_button->Location = System::Drawing::Point(39, 119);
+			this->car_create_button->Location = System::Drawing::Point(39, 93);
 			this->car_create_button->Name = L"car_create_button";
 			this->car_create_button->Size = System::Drawing::Size(122, 38);
 			this->car_create_button->TabIndex = 5;
@@ -234,17 +237,29 @@ namespace GateCommander {
 			// 
 			// manage_groupbox
 			// 
+			this->manage_groupbox->Controls->Add(this->car_forward_button);
 			this->manage_groupbox->Controls->Add(this->label4);
 			this->manage_groupbox->Controls->Add(this->label3);
 			this->manage_groupbox->Controls->Add(this->car_create_button);
 			this->manage_groupbox->Controls->Add(this->space_free_button);
 			this->manage_groupbox->Controls->Add(this->gate_status_trackbar);
+			this->manage_groupbox->Enabled = false;
 			this->manage_groupbox->Location = System::Drawing::Point(504, 12);
 			this->manage_groupbox->Name = L"manage_groupbox";
-			this->manage_groupbox->Size = System::Drawing::Size(200, 214);
+			this->manage_groupbox->Size = System::Drawing::Size(200, 244);
 			this->manage_groupbox->TabIndex = 9;
 			this->manage_groupbox->TabStop = false;
 			this->manage_groupbox->Text = L"Сценарий";
+			// 
+			// car_forward_button
+			// 
+			this->car_forward_button->Location = System::Drawing::Point(39, 181);
+			this->car_forward_button->Name = L"car_forward_button";
+			this->car_forward_button->Size = System::Drawing::Size(122, 38);
+			this->car_forward_button->TabIndex = 8;
+			this->car_forward_button->Text = L"Проехать";
+			this->car_forward_button->UseVisualStyleBackColor = true;
+			this->car_forward_button->Click += gcnew System::EventHandler(this, &MyForm::car_forward_button_Click);
 			// 
 			// label4
 			// 
@@ -298,7 +313,7 @@ namespace GateCommander {
 //Инициализация переменных
 int TOTAL = NULL, FREE = NULL;
 bool AUTOMATE = false, VISUALS = false, INIT = false, WAITING_CAR = false;
-Parking^ parking = gcnew Parking(300, 100);
+Parking^ parking = gcnew Parking(NULL, NULL);
 Gate^ gate = gcnew Gate();
 
 private: System::Void apply_changes_button_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -308,6 +323,7 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 		parking->set_total_places(TOTAL);
 		parking->set_occupied_places(TOTAL - FREE);
 		if (VISUALS) parking->send_parametres();
+		manage_groupbox->Enabled = true;
 		INIT = true;
 	}
 	catch (...) {
@@ -315,6 +331,10 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 	}
 }
 private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+	System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+	sa->WriteLine("Global:");
+	sa->WriteLine("Event=Clear");
+	sa->Close();
 	if (toggle_visualisation_checkbox->Checked) {
 		VISUALS = true;
 		log_listbox->Items->Add("Визуализация включена.");
@@ -323,7 +343,6 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 		if (WAITING_CAR) {
 			Car^ car = gcnew Car(11);
 			car->incoming_car_request();
-			WAITING_CAR = false;
 		}
 		return;
 	}
@@ -353,28 +372,34 @@ private: System::Void clear_log_button_Click(System::Object^ sender, System::Eve
 	
 }
 private: System::Void car_create_button_Click(System::Object^ sender, System::EventArgs^ e) {
-	Random^ rand = gcnew Random;
-	int random_car_number = rand->Next(0, 999);
-	Car^ car = gcnew Car(rand->Next(0, 999));
-	
-	FREE--;
-	free_input_textbox->Text = FREE.ToString();
-	parking->set_occupied_places(TOTAL - FREE);
-	log_listbox->Items->Add("Машина с номером " + car->get_car_number() + " у шлагбаума");
-	if (VISUALS) {
-		car->incoming_car_request();
-		parking->send_parametres();
+	if (!WAITING_CAR) {
+		Random^ rand = gcnew Random;
+		int random_car_number = rand->Next(0, 999);
+		Car^ car = gcnew Car(rand->Next(0, 999));
+
+		FREE--;
+		free_input_textbox->Text = FREE.ToString();
+		parking->set_occupied_places(TOTAL - FREE);
+		log_listbox->Items->Add("Машина с номером " + car->get_car_number() + " ожидает у шлагбаума");
+		WAITING_CAR = true;
+		if (VISUALS) {
+			car->incoming_car_request();
+			parking->send_parametres();
+		}
 	}
 	else {
-		WAITING_CAR = true;
+		log_listbox->Items->Add("Другая машина уже стоит у входа");
+		MessageBox::Show("Невозможно подъехать к воротам, пока у них стоит другая машина", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
 private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System::EventArgs^ e) {
 	if (gate_status_trackbar->Value == 1) {
 		gate->open();
+		log_listbox->Items->Add("Ворота ОТКРЫТЫ");
 	}
 	else {
 		gate->close();
+		log_listbox->Items->Add("Ворота ЗАКРЫТЫ");
 	}
 	if (VISUALS) gate->send_parametres();
 }
@@ -385,9 +410,32 @@ private: System::Void space_free_button_Click(System::Object^ sender, System::Ev
 	parking->set_occupied_places(TOTAL - FREE);
 	log_listbox->Items->Add("Парковочное место освобождено");
 	if (VISUALS) {
-		log_listbox->Items->Add("Проверка отрисовки");
 		car->leaving_car_request();
 		parking->send_parametres();
+	}
+}
+private: System::Void car_forward_button_Click(System::Object^ sender, System::EventArgs^ e) {
+	if (WAITING_CAR) {
+		if (gate->is_opened()) {
+			if (parking->is_parking_avaliable()) {
+				Car^ car = gcnew Car(11);
+				if (VISUALS) car->send_forward();
+				WAITING_CAR = false;
+				log_listbox->Items->Add("Машина успешно припарковалась");
+			}
+			else {
+				log_listbox->Items->Add("На парковке нет свободного места!");
+				MessageBox::Show("Парковка полностью занята, невозможно проехать", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
+			}
+		}
+		else {
+			log_listbox->Items->Add("Невозможно проехать, дорога закрыта");
+			MessageBox::Show("Путь закрыт, невозможно проехать", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
+		}
+	}
+	else {
+		log_listbox->Items->Add("Указан проезд для несуществующей машины");
+		MessageBox::Show("Указать проехать можно только существующей машине", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
 };

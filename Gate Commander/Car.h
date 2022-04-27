@@ -14,6 +14,7 @@ public:
 	void incoming_car_request() {
 		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
 		sa->WriteLine("Car:");
+		sa->WriteLine("Event=Create");
 		sa->WriteLine("Direction=up");
 		sa->WriteLine("Number=" + number);
 		sa->Close();
@@ -21,7 +22,17 @@ public:
 	void leaving_car_request() {
 		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
 		sa->WriteLine("Car:");
+		sa->WriteLine("Event=Create");
 		sa->WriteLine("Direction=down");
+		sa->WriteLine("Event=Forward");
+		sa->WriteLine("Number=" + number);
+		sa->Close();
+	}
+	void send_forward() {
+		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+		sa->WriteLine("Car:");
+		sa->WriteLine("Event=Forward");
+		sa->WriteLine("Direction=up");
 		sa->WriteLine("Number=" + number);
 		sa->Close();
 	}
