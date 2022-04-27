@@ -297,7 +297,7 @@ namespace GateCommander {
 
 //Инициализация переменных
 int TOTAL = NULL, FREE = NULL;
-bool AUTOMATE = false, VISUALS = false, INIT = false;
+bool AUTOMATE = false, VISUALS = false, INIT = false, WAITING_CAR = false;
 Parking^ parking = gcnew Parking(300, 100);
 Gate^ gate = gcnew Gate();
 
@@ -307,7 +307,7 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 		FREE = Convert::ToInt32(free_input_textbox->Text);
 		parking->set_total_places(TOTAL);
 		parking->set_occupied_places(TOTAL - FREE);
-		parking->send_parametres();
+		if (VISUALS) parking->send_parametres();
 		INIT = true;
 	}
 	catch (...) {
@@ -318,6 +318,13 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 	if (toggle_visualisation_checkbox->Checked) {
 		VISUALS = true;
 		log_listbox->Items->Add("Визуализация включена.");
+		parking->send_parametres();
+		gate->send_parametres();
+		if (WAITING_CAR) {
+			Car^ car = gcnew Car(11);
+			car->incoming_car_request();
+			WAITING_CAR = false;
+		}
 		return;
 	}
 	VISUALS = false;
@@ -331,7 +338,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 		free_input_textbox->Enabled = false;
 		return;
 	}
-	else if (!INIT) {
+	else if (!toggle_automation_checkbox->Checked && !INIT) {
 		MessageBox::Show("Сначала введите информацию о парковке", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 		toggle_automation_checkbox->Checked = false;
 		return;
@@ -346,12 +353,21 @@ private: System::Void clear_log_button_Click(System::Object^ sender, System::Eve
 	
 }
 private: System::Void car_create_button_Click(System::Object^ sender, System::EventArgs^ e) {
-	Car^ car = gcnew Car(12);
-	car->incoming_car_request();
+	Random^ rand = gcnew Random;
+	int random_car_number = rand->Next(0, 999);
+	Car^ car = gcnew Car(rand->Next(0, 999));
+	
 	FREE--;
 	free_input_textbox->Text = FREE.ToString();
 	parking->set_occupied_places(TOTAL - FREE);
-	parking->send_parametres();
+	log_listbox->Items->Add("Машина с номером " + car->get_car_number() + " у шлагбаума");
+	if (VISUALS) {
+		car->incoming_car_request();
+		parking->send_parametres();
+	}
+	else {
+		WAITING_CAR = true;
+	}
 }
 private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System::EventArgs^ e) {
 	if (gate_status_trackbar->Value == 1) {
@@ -360,14 +376,19 @@ private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System
 	else {
 		gate->close();
 	}
+	if (VISUALS) gate->send_parametres();
 }
 private: System::Void space_free_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	Car^ car = gcnew Car(11);
-	car->leaving_car_request();
 	FREE++;
 	free_input_textbox->Text = FREE.ToString();
 	parking->set_occupied_places(TOTAL - FREE);
-	parking->send_parametres();
+	log_listbox->Items->Add("Парковочное место освобождено");
+	if (VISUALS) {
+		log_listbox->Items->Add("Проверка отрисовки");
+		car->leaving_car_request();
+		parking->send_parametres();
+	}
 }
 };
 }
