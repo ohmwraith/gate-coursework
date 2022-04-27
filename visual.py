@@ -4,6 +4,18 @@ import random
 import math
 import os
 from os import path
+import psutil
+import sys
+from time import sleep
+import time
+
+
+def is_commander_running():
+    for proc in psutil.process_iter():
+        if "Gate Commander.exe" in str(proc.name):
+            return True
+    return False
+
 
 pygame.init()
 img_dir = path.join(path.dirname(__file__), 'sprites')
@@ -158,11 +170,19 @@ all_sprites.add(gate)
 total = None
 free = None
 running = True
+WAITING_SCREEN = True
+exe_checking_last_time = time.time() - 5
 
 previous_data = Interface.get_content()
-
 while running:
     clock.tick(FPS)
+    #Проверка запущен ли командер
+    if (time.time() - exe_checking_last_time) > 5:
+        exe_checking_last_time = time.time()
+        if not is_commander_running():
+            WAITING_SCREEN = True
+        else:
+            WAITING_SCREEN = False
     #Обработка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -234,5 +254,11 @@ while running:
     draw_text(screen, 'Free: ' + str(free), int(WIDTH * .05), WIDTH * .05, HEIGHT * .15 - int(WIDTH * .07) / 2,
               WHITE)
     gate_sprite_group.draw(screen)
+    #Если коммандер не запущен
+    if WAITING_SCREEN:
+        screen.fill(BLACK)
+        draw_text(screen, 'Ожидание запуска Gate Commander.exe', int(WIDTH * .05), WIDTH * .15,
+                  HEIGHT * .5 - int(WIDTH * .05) / 2,
+                  WHITE)
     # После отрисовки всего, переворачиваем экран
     pygame.display.flip()
