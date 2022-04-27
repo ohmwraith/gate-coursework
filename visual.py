@@ -181,6 +181,12 @@ while running:
         exe_checking_last_time = time.time()
         if not is_commander_running():
             WAITING_SCREEN = True
+            total = None
+            free = None
+            gate.close()
+            for obj in car_sprite_group:
+                car_sprite_group.remove(obj)
+                all_sprites.remove(obj)
         else:
             WAITING_SCREEN = False
     #Обработка событий
