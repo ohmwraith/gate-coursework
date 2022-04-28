@@ -1,3 +1,4 @@
+using namespace System::Windows::Forms;
 #pragma once
 ref class Parking
 {
@@ -18,11 +19,16 @@ public:
 		return occupied;
 	}
 	void send_parametres() {
-		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
-		sa->WriteLine("Parking:");
-		sa->WriteLine("Total=" + total);
-		sa->WriteLine("Free=" + (total - occupied));
-		sa->Close();
+		try{
+			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+			sa->WriteLine("Parking:");
+			sa->WriteLine("Total=" + total);
+			sa->WriteLine("Free=" + (total - occupied));
+			sa->Close();
+		}
+		catch (System::IO::IOException^ e) {
+			MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
 	}
 	int get_total_places() {
 		return total;
@@ -37,10 +43,15 @@ public:
 		if (total - occupied > 0) {
 			occupied++;
 			return true;
-			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
-			sa->WriteLine("Parking:");
-			sa->WriteLine("Occupied=" + occupied);
-			sa->Close();
+			try {
+				System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+				sa->WriteLine("Parking:");
+				sa->WriteLine("Occupied=" + occupied);
+				sa->Close();
+			}
+			catch (System::IO::IOException^ e) {
+				MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			}
 		}
 		return false;
 
@@ -56,10 +67,15 @@ public:
 		return(total - occupied > 0 ? true : false);
 	}
 	void WriteInterface() {
-		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
-		sa->WriteLine("Parking:");
-		sa->WriteLine("Total=" + total);
-		sa->Close();
+		try{
+			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+			sa->WriteLine("Parking:");
+			sa->WriteLine("Total=" + total);
+			sa->Close();
+		}
+		catch (System::IO::IOException^ e) {
+			MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
 	}
 };
 

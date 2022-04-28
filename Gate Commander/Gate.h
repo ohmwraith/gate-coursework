@@ -1,3 +1,4 @@
+using namespace System::Windows::Forms;
 #pragma once
 ref class Gate
 {
@@ -20,10 +21,15 @@ public:
 		return true;
 	}
 	void send_parametres() {
-		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
-		sa->WriteLine("Gate:");
-		sa->WriteLine("Opened=" + opened);
-		sa->Close();
+		try {
+			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+			sa->WriteLine("Gate:");
+			sa->WriteLine("Opened=" + opened);
+			sa->Close();
+		}
+		catch (System::IO::IOException^ e) {
+			MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
 	}
 };
 

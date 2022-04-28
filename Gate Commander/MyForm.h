@@ -10,9 +10,14 @@
 
 
 void WriteInterface(System::String^ st) {
-	System::IO::StreamWriter^ sa = System::IO::File::AppendText("Interface.txt");
-	sa->WriteLine(st);
-	sa->Close();
+	try {
+		System::IO::StreamWriter^ sa = System::IO::File::AppendText("Interface.txt");
+		sa->WriteLine(st);
+		sa->Close();
+	}
+	catch (System::IO::IOException^ e) {
+		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Error);
+	}
 }
 #pragma once
 
@@ -173,6 +178,7 @@ namespace GateCommander {
 			this->total_input_textbox->Size = System::Drawing::Size(100, 20);
 			this->total_input_textbox->TabIndex = 6;
 			this->total_input_textbox->TextChanged += gcnew System::EventHandler(this, &MyForm::total_input_textbox_TextChanged);
+			this->total_input_textbox->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &MyForm::total_input_textbox_KeyPress);
 			// 
 			// free_input_textbox
 			// 
@@ -181,6 +187,7 @@ namespace GateCommander {
 			this->free_input_textbox->Size = System::Drawing::Size(100, 20);
 			this->free_input_textbox->TabIndex = 7;
 			this->free_input_textbox->TextChanged += gcnew System::EventHandler(this, &MyForm::free_input_textbox_TextChanged);
+			this->free_input_textbox->KeyPress += gcnew System::Windows::Forms::KeyPressEventHandler(this, &MyForm::free_input_textbox_KeyPress);
 			// 
 			// settings_groupbox
 			// 
@@ -395,12 +402,14 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 			if (parking->is_parking_avaliable()) {
 				gate_status_trackbar->Value = 1;
 				gate->open();
+				log_listbox->Items->Add("[АВТОМАТ] Ворота ОТКРЫТЫ");
 				gate->send_parametres();
 				car->send_forward();
-				log_listbox->Items->Add("[АВТОМАТ] Машина может проехать");
+				log_listbox->Items->Add("[АВТОМАТ] Машина проезжает на парковку");
 				Sleep(1000);
 				gate_status_trackbar->Value = 0;
 				gate->close();
+				log_listbox->Items->Add("[АВТОМАТ] Ворота ЗАКРЫТЫ");
 				gate->send_parametres();
 				FREE--;
 				free_input_textbox->Text = FREE.ToString();
@@ -409,12 +418,12 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 				WAITING_CAR = false;
 			}
 			else {
-				log_listbox->Items->Add("[АВТОМАТ] Машина ожидает свободного места");
+				log_listbox->Items->Add("[АВТОМАТ] Машина ожидает свободного места на парковке");
 			}
 		}
 	}
 	else {
-		log_listbox->Items->Add("Другая машина уже стоит у входа");
+		log_listbox->Items->Add("Невозможно создать машину - другая машина уже стоит у входа");
 		MessageBox::Show("Невозможно подъехать к воротам, пока у них стоит другая машина", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
@@ -443,12 +452,14 @@ private: System::Void space_free_button_Click(System::Object^ sender, System::Ev
 	if (AUTOMATE && WAITING_CAR && parking->is_parking_avaliable()) {
 		gate_status_trackbar->Value = 1;
 		gate->open();
+		log_listbox->Items->Add("[АВТОМАТ] Ворота ОТКРЫТЫ");
 		gate->send_parametres();
 		car->send_forward();
-		log_listbox->Items->Add("[АВТОМАТ] Машина может проехать");
+		log_listbox->Items->Add("[АВТОМАТ] Машина проезжает на парковку");
 		Sleep(1000);
 		gate_status_trackbar->Value = 0;
 		gate->close();
+		log_listbox->Items->Add("[АВТОМАТ] Ворота ЗАКРЫТЫ");
 		gate->send_parametres();
 		FREE--;
 		free_input_textbox->Text = FREE.ToString();
@@ -485,6 +496,26 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 		MessageBox::Show("Указать проехать можно только существующей машине", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
+	private: System::Void total_input_textbox_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e) {
+		if ((e->KeyChar < 48 || e->KeyChar > 57) && e->KeyChar != '\b') // 48-57 [A-Z + символы #,@,< и тд]
+			e->Handled = true;
+
+		// ограничение нажатия двойного 0
+		if (e->KeyChar == (char)Keys::D0 || e->KeyChar == (char)Keys::NumPad0)  // Если нажата клавиша 0
+			if (total_input_textbox->Text->Length >= 1)        // Если строка не пустая
+				if (total_input_textbox->Text[0] == '0' && total_input_textbox->SelectionStart < 2)
+					e->Handled = true;
+	}
+	private: System::Void free_input_textbox_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e) {
+		if ((e->KeyChar < 48 || e->KeyChar > 57) && e->KeyChar != '\b') // 48-57 [A-Z + символы #,@,< и тд]
+			e->Handled = true;
+
+		// ограничение нажатия двойного 0
+		if (e->KeyChar == (char)Keys::D0 || e->KeyChar == (char)Keys::NumPad0)  // Если нажата клавиша 0
+			if (free_input_textbox->Text->Length >= 1)        // Если строка не пустая
+				if (free_input_textbox->Text[0] == '0' && free_input_textbox->SelectionStart < 2)
+					e->Handled = true;
+	}
 private: System::Void total_input_textbox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
 
 }
