@@ -361,15 +361,22 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 		try {
 			TOTAL = Convert::ToInt32(total_input_textbox->Text);
 			FREE = Convert::ToInt32(free_input_textbox->Text);
-			parking->set_total_places(TOTAL);
-			parking->set_occupied_places(TOTAL - FREE);
-			if (VISUALS) parking->send_parametres();
-			manage_groupbox->Enabled = true;
-			INIT = true;
-			toggle_automation_checkbox->Enabled = true;
+			if (TOTAL > FREE) {
+				parking->set_total_places(TOTAL);
+				parking->set_occupied_places(TOTAL - FREE);
+				if (VISUALS) parking->send_parametres();
+				manage_groupbox->Enabled = true;
+				INIT = true;
+				toggle_automation_checkbox->Enabled = true;
+			} 
+			else {
+				TOTAL = NULL;
+				FREE = NULL;
+				MessageBox::Show("Общее количество мест должно быть больше количества свободных мест", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+			}
 		}
 		catch (...) {
-			MessageBox::Show("Не удалось преобразовать введенные данные", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
+			MessageBox::Show("Не удалось преобразовать введенные данные, проверьте правильность ввода", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 	}
 	else {
