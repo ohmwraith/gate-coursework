@@ -172,6 +172,7 @@ namespace GateCommander {
 			this->total_input_textbox->Name = L"total_input_textbox";
 			this->total_input_textbox->Size = System::Drawing::Size(100, 20);
 			this->total_input_textbox->TabIndex = 6;
+			this->total_input_textbox->TextChanged += gcnew System::EventHandler(this, &MyForm::total_input_textbox_TextChanged);
 			// 
 			// free_input_textbox
 			// 
@@ -179,6 +180,7 @@ namespace GateCommander {
 			this->free_input_textbox->Name = L"free_input_textbox";
 			this->free_input_textbox->Size = System::Drawing::Size(100, 20);
 			this->free_input_textbox->TabIndex = 7;
+			this->free_input_textbox->TextChanged += gcnew System::EventHandler(this, &MyForm::free_input_textbox_TextChanged);
 			// 
 			// settings_groupbox
 			// 
@@ -209,6 +211,7 @@ namespace GateCommander {
 			// toggle_automation_checkbox
 			// 
 			this->toggle_automation_checkbox->AutoSize = true;
+			this->toggle_automation_checkbox->Enabled = false;
 			this->toggle_automation_checkbox->Location = System::Drawing::Point(184, 19);
 			this->toggle_automation_checkbox->Name = L"toggle_automation_checkbox";
 			this->toggle_automation_checkbox->Size = System::Drawing::Size(69, 17);
@@ -325,6 +328,7 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 		if (VISUALS) parking->send_parametres();
 		manage_groupbox->Enabled = true;
 		INIT = true;
+		toggle_automation_checkbox->Enabled = true;
 	}
 	catch (...) {
 		MessageBox::Show("Не удалось преобразовать введенные данные", "Ошибка", MessageBoxButtons::OK, MessageBoxIcon::Error);
@@ -355,6 +359,8 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 		log_listbox->Items->Add("Автоматизация включена.");
 		total_input_textbox->Enabled = false;
 		free_input_textbox->Enabled = false;
+		gate_status_trackbar->Enabled = false;
+		car_forward_button->Enabled = false;
 		return;
 	}
 	else if (!toggle_automation_checkbox->Checked && !INIT) {
@@ -366,6 +372,8 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 	log_listbox->Items->Add("Автоматизация выключена.");
 	total_input_textbox->Enabled = true;
 	free_input_textbox->Enabled = true;
+	gate_status_trackbar->Enabled = true;
+	car_forward_button->Enabled = true;
 }
 private: System::Void clear_log_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	log_listbox->Items->Clear();
@@ -377,14 +385,32 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 		int random_car_number = rand->Next(0, 999);
 		Car^ car = gcnew Car(rand->Next(0, 999));
 
-		FREE--;
-		free_input_textbox->Text = FREE.ToString();
-		parking->set_occupied_places(TOTAL - FREE);
 		log_listbox->Items->Add("Машина с номером " + car->get_car_number() + " ожидает у шлагбаума");
 		WAITING_CAR = true;
 		if (VISUALS) {
 			car->incoming_car_request();
 			parking->send_parametres();
+		}
+		if (AUTOMATE) {
+			if (parking->is_parking_avaliable()) {
+				gate_status_trackbar->Value = 1;
+				gate->open();
+				gate->send_parametres();
+				car->send_forward();
+				log_listbox->Items->Add("[АВТОМАТ] Машина может проехать");
+				Sleep(1000);
+				gate_status_trackbar->Value = 0;
+				gate->close();
+				gate->send_parametres();
+				FREE--;
+				free_input_textbox->Text = FREE.ToString();
+				parking->set_occupied_places(TOTAL - FREE);
+				parking->send_parametres();
+				WAITING_CAR = false;
+			}
+			else {
+				log_listbox->Items->Add("[АВТОМАТ] Машина ожидает свободного места");
+			}
 		}
 	}
 	else {
@@ -408,10 +434,27 @@ private: System::Void space_free_button_Click(System::Object^ sender, System::Ev
 	FREE++;
 	free_input_textbox->Text = FREE.ToString();
 	parking->set_occupied_places(TOTAL - FREE);
+	parking->send_parametres();
 	log_listbox->Items->Add("Парковочное место освобождено");
 	if (VISUALS) {
 		car->leaving_car_request();
 		parking->send_parametres();
+	}
+	if (AUTOMATE && WAITING_CAR && parking->is_parking_avaliable()) {
+		gate_status_trackbar->Value = 1;
+		gate->open();
+		gate->send_parametres();
+		car->send_forward();
+		log_listbox->Items->Add("[АВТОМАТ] Машина может проехать");
+		Sleep(1000);
+		gate_status_trackbar->Value = 0;
+		gate->close();
+		gate->send_parametres();
+		FREE--;
+		free_input_textbox->Text = FREE.ToString();
+		parking->set_occupied_places(TOTAL - FREE);
+		parking->send_parametres();
+		WAITING_CAR = false;
 	}
 }
 private: System::Void car_forward_button_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -420,6 +463,10 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 			if (parking->is_parking_avaliable()) {
 				Car^ car = gcnew Car(11);
 				if (VISUALS) car->send_forward();
+				FREE--;
+				free_input_textbox->Text = FREE.ToString();
+				parking->set_occupied_places(TOTAL - FREE);
+				parking->send_parametres();
 				WAITING_CAR = false;
 				log_listbox->Items->Add("Машина успешно припарковалась");
 			}
@@ -437,6 +484,11 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 		log_listbox->Items->Add("Указан проезд для несуществующей машины");
 		MessageBox::Show("Указать проехать можно только существующей машине", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
+}
+private: System::Void total_input_textbox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+}
+private: System::Void free_input_textbox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
 }
 };
 }

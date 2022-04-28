@@ -6,7 +6,6 @@ import os
 from os import path
 import psutil
 import sys
-from time import sleep
 import time
 
 
@@ -131,15 +130,17 @@ class Car(pygame.sprite.Sprite):
         if self.direction == "up":
             self.rect.centerx = WIDTH / 2.7
             self.rect.bottom = HEIGHT - 10
-        else:
+        elif self.direction == "down":
             self.rect.centerx = WIDTH / 1.4
             self.rect.bottom = 0
             self.image = pygame.transform.rotate(self.image, 180)
+            self.speedy = 10
         self.radius = int(self.rect.width / 4)
         self.opened = False
         self.speedy = 0
 
-
+    def get_direction(self):
+        return self.direction
     def ESP(self):
         pygame.draw.circle(self.image, YELLOW, self.rect.center, self.radius, 2)
     def move_to_parking(self):
@@ -170,14 +171,15 @@ all_sprites.add(gate)
 total = None
 free = None
 running = True
-WAITING_SCREEN = True
+CHECK_RUNNING = False
+WAITING_SCREEN = False
 exe_checking_last_time = time.time() - 5
 
 previous_data = Interface.get_content()
 while running:
     clock.tick(FPS)
     #Проверка запущен ли командер
-    if (time.time() - exe_checking_last_time) > 5:
+    if CHECK_RUNNING and (time.time() - exe_checking_last_time) > 5:
         exe_checking_last_time = time.time()
         if not is_commander_running():
             WAITING_SCREEN = True
@@ -238,8 +240,9 @@ while running:
                     car_sprite_group.add(car)
                     all_sprites.add(car)
                 if dictionary.get('Event') == 'Forward':
-                    if len(car_sprite_group) > 0:
-                        car.move_to_parking()
+                    for obj in car_sprite_group:
+                        if obj.get_direction() == "up":
+                            obj.move_to_parking()
                 if dictionary.get('Direction') == "down":
                     car.move_to_parking()
         previous_data = data
