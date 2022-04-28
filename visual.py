@@ -14,12 +14,30 @@ def is_commander_running():
         if "Gate Commander.exe" in str(proc.name):
             return True
     return False
+def search_interface(way):
+    output = False
+    for obj in os.listdir(path=way):
+        if obj == "Interface.txt":
+            output = way+obj
+            return output
+        elif obj.find('.') == -1 and obj != "venv":
+            way += '/'
+            if way == './' or  way == '/':
+                way = ''
 
-
+            output = search_interface(way + obj)
+            if output != False:
+                return output
+    return output
 pygame.init()
 img_dir = path.join(path.dirname(__file__), 'sprites')
 snd_dir = path.join(path.dirname(__file__), 'sounds')
 vid_dir = path.join(path.dirname(__file__), 'videos')
+interface_path = "interface.txt"
+if interface_path not in os.listdir():
+    interface_path = search_interface('.')
+    print(interface_path)
+
 
 WIDTH = 1024
 HEIGHT = 1024
@@ -175,7 +193,7 @@ FIRST_CHECK_RUNNING = True
 WAITING_SCREEN = False
 exe_checking_last_time = time.time() - 2
 
-previous_data = Interface.get_content()
+previous_data = Interface.get_content(interface_path)
 while running:
     clock.tick(FPS)
     #Проверка запущен ли командер
@@ -213,7 +231,7 @@ while running:
                 car_sprite_group.add(car)
                 all_sprites.add(car)
                 car.move_to_parking()
-    data = Interface.get_lines()
+    data = Interface.get_lines(interface_path)
     if data != previous_data:
         array = Interface.extract_data(data)
         if len(array) > 0:
@@ -249,10 +267,10 @@ while running:
                     car.move_to_parking()
         previous_data = data
         try:
-            Interface.clean_interface()
+            Interface.clean_interface(interface_path)
         except PermissionError:
             try:
-                while not Interface.clean_interface():
+                while not Interface.clean_interface(interface_path):
                     print("Ожидание доступа")
             except PermissionError:
                 print("Не удалось получить доступ к файлу, синронизуйтесь и попробуйте отправлять запросы медленней")

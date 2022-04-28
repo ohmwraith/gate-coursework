@@ -1,10 +1,10 @@
 
-def get_content():
-    with open("interface.txt", "r") as interface:
+def get_content(way):
+    with open(way, "r") as interface:
         return interface.read()
 
-def get_lines():
-    with open("interface.txt", "r") as interface:
+def get_lines(way):
+    with open(way, "r") as interface:
         return interface.readlines()
 def extract_data(data):
     array = []
@@ -20,8 +20,8 @@ def extract_data(data):
             array[current_object_pointer].setdefault(line.split("=")[0], line.split("=")[1])
 
     return array
-def clean_interface():
-    with open("interface.txt", "w") as interface:
+def clean_interface(way):
+    with open(way, "w") as interface:
         interface.truncate()
         interface.close()
     return True
