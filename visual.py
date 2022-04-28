@@ -171,26 +171,28 @@ all_sprites.add(gate)
 total = None
 free = None
 running = True
-CHECK_RUNNING = False
+FIRST_CHECK_RUNNING = True
 WAITING_SCREEN = False
-exe_checking_last_time = time.time() - 5
+exe_checking_last_time = time.time() - 2
 
 previous_data = Interface.get_content()
 while running:
     clock.tick(FPS)
     #Проверка запущен ли командер
-    if CHECK_RUNNING and (time.time() - exe_checking_last_time) > 5:
-        exe_checking_last_time = time.time()
-        if not is_commander_running():
-            WAITING_SCREEN = True
-            total = None
-            free = None
-            gate.close()
-            for obj in car_sprite_group:
-                car_sprite_group.remove(obj)
-                all_sprites.remove(obj)
-        else:
-            WAITING_SCREEN = False
+    if FIRST_CHECK_RUNNING:
+        if (time.time() - exe_checking_last_time) > 1:
+            exe_checking_last_time = time.time()
+            if not is_commander_running():
+                WAITING_SCREEN = True
+                total = None
+                free = None
+                gate.close()
+                for obj in car_sprite_group:
+                    car_sprite_group.remove(obj)
+                    all_sprites.remove(obj)
+            else:
+                WAITING_SCREEN = False
+                FIRST_CHECK_RUNNING = False
     #Обработка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
