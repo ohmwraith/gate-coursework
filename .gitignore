@@ -4,3 +4,5 @@ __pycache__/
 .vs/
 Debug/
 x64/
+x64/Interface.txt
+Interface.txt

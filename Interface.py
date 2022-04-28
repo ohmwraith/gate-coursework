@@ -25,5 +25,3 @@ def clean_interface(way):
         interface.truncate()
         interface.close()
     return True
-if __name__ == "__main__":
-    print(extract_data(get_lines()))
