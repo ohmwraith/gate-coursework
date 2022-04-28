@@ -30,13 +30,16 @@ def search_interface(way):
                 return output
     return output
 pygame.init()
-img_dir = path.join(path.dirname(__file__), 'sprites')
-snd_dir = path.join(path.dirname(__file__), 'sounds')
-vid_dir = path.join(path.dirname(__file__), 'videos')
+img_dir = "Sprites"
+#snd_dir = path.join(path.dirname(__file__), 'sounds')
+#vid_dir = path.join(path.dirname(__file__), 'videos')
 interface_path = "interface.txt"
 if interface_path not in os.listdir():
     interface_path = search_interface('.')
-    print(interface_path)
+    if not interface_path:
+        print("Интерфейс не найден")
+        sys.exit()
+    print("Интерфейс найден: " + interface_path)
 
 
 WIDTH = 1024
@@ -71,8 +74,9 @@ car_list = ['car1.png', 'car2.png', 'car3.png']
 for img in car_list:
     car_images.append(pygame.image.load(path.join(img_dir, img)).convert())
 
-font_name = pygame.font.match_font('Avenir Regular')
 def draw_text(surf, text, size, x, y, color):
+    font_name = pygame.font.match_font('Avenir Regular')
+    font_name = 'fonts/Metropolis-Bold.otf'
     font = pygame.font.Font(font_name, size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
@@ -279,14 +283,14 @@ while running:
     screen.fill(BLACK)
     screen.blit(background_img, background_rect)
     all_sprites.draw(screen)
-    draw_text(screen, 'Total: ' + str(total), int(WIDTH * .05), WIDTH * .05, HEIGHT * .10 - int(WIDTH * .07) / 2, WHITE)
-    draw_text(screen, 'Free: ' + str(free), int(WIDTH * .05), WIDTH * .05, HEIGHT * .15 - int(WIDTH * .07) / 2,
+    draw_text(screen, 'Total: ' + str(total), int(WIDTH * .04), WIDTH * .02, HEIGHT * .10 - int(WIDTH * .07) / 2, WHITE)
+    draw_text(screen, 'Free: ' + str(free), int(WIDTH * .04), WIDTH * .02, HEIGHT * .15 - int(WIDTH * .07) / 2,
               WHITE)
     gate_sprite_group.draw(screen)
     #Если коммандер не запущен
     if WAITING_SCREEN:
         screen.fill(BLACK)
-        draw_text(screen, 'Ожидание запуска Gate Commander.exe', int(WIDTH * .05), WIDTH * .15,
+        draw_text(screen, 'Waiting Gate Commander.exe', int(WIDTH * .05), WIDTH * .15,
                   HEIGHT * .5 - int(WIDTH * .05) / 2,
                   WHITE)
     # После отрисовки всего, переворачиваем экран
