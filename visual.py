@@ -15,7 +15,7 @@ def is_commander_running():
             return True
     return False
 def search_interface(way):
-    output = False
+    output = None
     for obj in os.listdir(path=way):
         if obj == "Interface.txt":
             output = way+obj
@@ -24,7 +24,6 @@ def search_interface(way):
             way += '/'
             if way == './' or  way == '/':
                 way = ''
-
             output = search_interface(way + obj)
             if output != False:
                 return output
@@ -33,13 +32,6 @@ pygame.init()
 img_dir = "Sprites"
 #snd_dir = path.join(path.dirname(__file__), 'sounds')
 #vid_dir = path.join(path.dirname(__file__), 'videos')
-interface_path = "interface.txt"
-if interface_path not in os.listdir():
-    interface_path = search_interface('.')
-    if not interface_path:
-        print("Интерфейс не найден")
-        sys.exit()
-    print("Интерфейс найден: " + interface_path)
 
 
 WIDTH = 1024
@@ -195,14 +187,17 @@ free = None
 running = True
 FIRST_CHECK_RUNNING = True
 WAITING_SCREEN = False
-exe_checking_last_time = time.time() - 2
+WAITING_INTERFACE_TABLE = False
+interface_path = None
+previous_data = None
+exe_checking_last_time = time.time() - 3
 
-previous_data = Interface.get_content(interface_path)
+
 while running:
     clock.tick(FPS)
     #Проверка запущен ли командер
     if FIRST_CHECK_RUNNING:
-        if (time.time() - exe_checking_last_time) > 1:
+        if (time.time() - exe_checking_last_time) > 2:
             exe_checking_last_time = time.time()
             if not is_commander_running():
                 WAITING_SCREEN = True
@@ -215,6 +210,24 @@ while running:
             else:
                 WAITING_SCREEN = False
                 FIRST_CHECK_RUNNING = False
+
+    if not interface_path:
+        if "Interface.txt" not in os.listdir():
+            interface_path = search_interface('.')
+            if interface_path != None:
+                print("Интерфейс найден: " + interface_path)
+                previous_data = Interface.get_content(interface_path)
+                WAITING_INTERFACE_TABLE = False
+            else:
+                print("Интерфейс не найден")
+                if not WAITING_SCREEN:
+                    WAITING_INTERFACE_TABLE = True
+                time.sleep(1)
+        else:
+            interface_path = "Interface.txt"
+            print("Интерфейс найден: " + interface_path)
+            previous_data = Interface.get_content(interface_path)
+            WAITING_INTERFACE_TABLE = False
     #Обработка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -235,49 +248,50 @@ while running:
                 car_sprite_group.add(car)
                 all_sprites.add(car)
                 car.move_to_parking()
-    data = Interface.get_lines(interface_path)
-    if data != previous_data:
-        array = Interface.extract_data(data)
-        if len(array) > 0:
-            print("Получены указания: " + str(array))
-        for dictionary in array:
-            if dictionary.get('Object') == 'Global':
-                if dictionary.get('Event') == 'Clear':
-                    gate.close()
-                    total = None
-                    free = None
-                    for obj in car_sprite_group:
-                        car_sprite_group.remove(obj)
-                        all_sprites.remove(obj)
+    if interface_path:
+        data = Interface.get_lines(interface_path)
+        if data != previous_data:
+            array = Interface.extract_data(data)
+            if len(array) > 0:
+                print("Получены указания: " + str(array))
+            for dictionary in array:
+                if dictionary.get('Object') == 'Global':
+                    if dictionary.get('Event') == 'Clear':
+                        gate.close()
+                        total = None
+                        free = None
+                        for obj in car_sprite_group:
+                            car_sprite_group.remove(obj)
+                            all_sprites.remove(obj)
 
-            if dictionary.get('Object') == 'Gate':
-                if dictionary.get('Opened') == 'True':
-                    gate.open()
-                else:
-                    gate.close()
-            if dictionary.get('Object') == 'Parking':
-                total = int(dictionary.get('Total'))
-                free = int(dictionary.get('Free'))
-            if dictionary.get('Object') == 'Car':
-                if dictionary.get('Event') == 'Create':
-                    car = Car(dictionary.get('Direction'))
-                    car_sprite_group.add(car)
-                    all_sprites.add(car)
-                if dictionary.get('Event') == 'Forward':
-                    for obj in car_sprite_group:
-                        if obj.get_direction() == "up":
-                            obj.move_to_parking()
-                if dictionary.get('Direction') == "down":
-                    car.move_to_parking()
-        previous_data = data
-        try:
-            Interface.clean_interface(interface_path)
-        except PermissionError:
+                if dictionary.get('Object') == 'Gate':
+                    if dictionary.get('Opened') == 'True':
+                        gate.open()
+                    else:
+                        gate.close()
+                if dictionary.get('Object') == 'Parking':
+                    total = int(dictionary.get('Total'))
+                    free = int(dictionary.get('Free'))
+                if dictionary.get('Object') == 'Car':
+                    if dictionary.get('Event') == 'Create':
+                        car = Car(dictionary.get('Direction'))
+                        car_sprite_group.add(car)
+                        all_sprites.add(car)
+                    if dictionary.get('Event') == 'Forward':
+                        for obj in car_sprite_group:
+                            if obj.get_direction() == "up":
+                                obj.move_to_parking()
+                    if dictionary.get('Direction') == "down":
+                        car.move_to_parking()
+            previous_data = data
             try:
-                while not Interface.clean_interface(interface_path):
-                    print("Ожидание доступа")
+                Interface.clean_interface(interface_path)
             except PermissionError:
-                print("Не удалось получить доступ к файлу, синронизуйтесь и попробуйте отправлять запросы медленней")
+                try:
+                    while not Interface.clean_interface(interface_path):
+                        print("Ожидание доступа")
+                except PermissionError:
+                    print("Не удалось получить доступ к файлу, синронизуйтесь и попробуйте отправлять запросы медленней")
     # Обновление
     all_sprites.update()
     screen.fill(BLACK)
@@ -291,6 +305,11 @@ while running:
     if WAITING_SCREEN:
         screen.fill(BLACK)
         draw_text(screen, 'Waiting Gate Commander.exe', int(WIDTH * .05), WIDTH * .15,
+                  HEIGHT * .5 - int(WIDTH * .05) / 2,
+                  WHITE)
+    if WAITING_INTERFACE_TABLE:
+        screen.fill(BLACK)
+        draw_text(screen, 'Waiting Interface.txt creating', int(WIDTH * .05), WIDTH * .15,
                   HEIGHT * .5 - int(WIDTH * .05) / 2,
                   WHITE)
     # После отрисовки всего, переворачиваем экран

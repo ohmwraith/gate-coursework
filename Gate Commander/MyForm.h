@@ -8,10 +8,9 @@
 #include"Parking.h"
 //#include"Classes.cpp"
 
-
 void WriteInterface(System::String^ st) {
 	try {
-		System::IO::StreamWriter^ sa = System::IO::File::AppendText("Interface.txt");
+		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
 		sa->WriteLine(st);
 		sa->Close();
 	}
@@ -340,6 +339,7 @@ namespace GateCommander {
 			this->Controls->Add(this->log_listbox);
 			this->Name = L"MyForm";
 			this->Text = L"Система управления";
+			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->gate_status_trackbar))->EndInit();
 			this->settings_groupbox->ResumeLayout(false);
 			this->settings_groupbox->PerformLayout();
@@ -361,7 +361,7 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 		try {
 			TOTAL = Convert::ToInt32(total_input_textbox->Text);
 			FREE = Convert::ToInt32(free_input_textbox->Text);
-			if (TOTAL > FREE) {
+			if (TOTAL >= FREE) {
 				parking->set_total_places(TOTAL);
 				parking->set_occupied_places(TOTAL - FREE);
 				if (VISUALS) parking->send_parametres();
@@ -584,6 +584,15 @@ private: System::Void free_input_textbox_TextChanged(System::Object^ sender, Sys
 }
 private: System::Void close_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	this->Close();
+}
+private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
+	try {
+		System::IO::FileStream^ sa = System::IO::File::Create("../Interface.txt");
+		sa->Close();
+	}
+	catch (System::IO::IOException^ e) {
+		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+	}
 }
 };
 }
