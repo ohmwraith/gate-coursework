@@ -144,11 +144,14 @@ namespace GateCommander {
 			// 
 			// log_listbox
 			// 
+			this->log_listbox->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(204)));
 			this->log_listbox->FormattingEnabled = true;
+			this->log_listbox->ItemHeight = 20;
 			this->log_listbox->Location = System::Drawing::Point(24, 131);
 			this->log_listbox->Name = L"log_listbox";
 			this->log_listbox->ScrollAlwaysVisible = true;
-			this->log_listbox->Size = System::Drawing::Size(464, 95);
+			this->log_listbox->Size = System::Drawing::Size(464, 84);
 			this->log_listbox->TabIndex = 3;
 			// 
 			// space_free_button
@@ -368,6 +371,25 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 		free_input_textbox->Enabled = false;
 		gate_status_trackbar->Enabled = false;
 		car_forward_button->Enabled = false;
+		if (WAITING_CAR) {
+			gate_status_trackbar->Value = 1;
+			gate->open();
+			log_listbox->Items->Add("[ÀÂÒÎÌÀÒ] Âîðîòà ÎÒÊÐÛÒÛ");
+			gate->send_parametres();
+			Car^ car = gcnew Car(1);
+			car->send_forward();
+			log_listbox->Items->Add("[ÀÂÒÎÌÀÒ] Ìàøèíà ïðîåçæàåò íà ïàðêîâêó");
+			Sleep(1000);
+			gate_status_trackbar->Value = 0;
+			gate->close();
+			log_listbox->Items->Add("[ÀÂÒÎÌÀÒ] Âîðîòà ÇÀÊÐÛÒÛ");
+			gate->send_parametres();
+			FREE--;
+			free_input_textbox->Text = FREE.ToString();
+			parking->set_occupied_places(TOTAL - FREE);
+			parking->send_parametres();
+			WAITING_CAR = false;
+		}
 		return;
 	}
 	else if (!toggle_automation_checkbox->Checked && !INIT) {
