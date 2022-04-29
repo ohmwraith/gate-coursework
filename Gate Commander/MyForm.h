@@ -405,7 +405,7 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
 	if (toggle_automation_checkbox->Checked && INIT) {
 		AUTOMATE = true;
-		log_listbox->Items->Add("Автоматизация включена.");
+		log_listbox->Items->Add("[АВТОМАТ] Автоматизация включена.");
 		total_input_textbox->Enabled = false;
 		free_input_textbox->Enabled = false;
 		gate_status_trackbar->Enabled = false;
@@ -437,7 +437,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 		return;
 	}
 	AUTOMATE = false;
-	log_listbox->Items->Add("Автоматизация выключена.");
+	log_listbox->Items->Add("[АВТОМАТ] Автоматизация выключена.");
 	total_input_textbox->Enabled = true;
 	free_input_textbox->Enabled = true;
 	gate_status_trackbar->Enabled = true;
@@ -484,7 +484,7 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 		}
 	}
 	else {
-		log_listbox->Items->Add("Невозможно создать машину - другая машина уже стоит у входа");
+		log_listbox->Items->Add("[ВНИМАНИЕ] Невозможно создать машину - другая машина уже стоит у входа");
 		MessageBox::Show("Невозможно подъехать к воротам, пока у них стоит другая машина", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
@@ -500,33 +500,39 @@ private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System
 	if (VISUALS) gate->send_parametres();
 }
 private: System::Void space_free_button_Click(System::Object^ sender, System::EventArgs^ e) {
-	Car^ car = gcnew Car(11);
-	FREE++;
-	free_input_textbox->Text = FREE.ToString();
-	parking->set_occupied_places(TOTAL - FREE);
-	parking->send_parametres();
-	log_listbox->Items->Add("Парковочное место освобождено");
-	if (VISUALS) {
-		car->leaving_car_request();
-		parking->send_parametres();
-	}
-	if (AUTOMATE && WAITING_CAR && parking->is_parking_avaliable()) {
-		gate_status_trackbar->Value = 1;
-		gate->open();
-		log_listbox->Items->Add("[АВТОМАТ] Ворота ОТКРЫТЫ");
-		gate->send_parametres();
-		car->send_forward();
-		log_listbox->Items->Add("[АВТОМАТ] Машина проезжает на парковку");
-		Sleep(1000);
-		gate_status_trackbar->Value = 0;
-		gate->close();
-		log_listbox->Items->Add("[АВТОМАТ] Ворота ЗАКРЫТЫ");
-		gate->send_parametres();
-		FREE--;
+	if (FREE != TOTAL) {
+		Car^ car = gcnew Car(11);
+		FREE++;
 		free_input_textbox->Text = FREE.ToString();
 		parking->set_occupied_places(TOTAL - FREE);
 		parking->send_parametres();
-		WAITING_CAR = false;
+		log_listbox->Items->Add("Парковочное место освобождено");
+		if (VISUALS) {
+			car->leaving_car_request();
+			parking->send_parametres();
+		}
+		if (AUTOMATE && WAITING_CAR && parking->is_parking_avaliable()) {
+			gate_status_trackbar->Value = 1;
+			gate->open();
+			log_listbox->Items->Add("[АВТОМАТ] Ворота ОТКРЫТЫ");
+			gate->send_parametres();
+			car->send_forward();
+			log_listbox->Items->Add("[АВТОМАТ] Машина проезжает на парковку");
+			Sleep(1000);
+			gate_status_trackbar->Value = 0;
+			gate->close();
+			log_listbox->Items->Add("[АВТОМАТ] Ворота ЗАКРЫТЫ");
+			gate->send_parametres();
+			FREE--;
+			free_input_textbox->Text = FREE.ToString();
+			parking->set_occupied_places(TOTAL - FREE);
+			parking->send_parametres();
+			WAITING_CAR = false;
+		}
+	}
+	else {
+		log_listbox->Items->Add("[ВНИМАНИЕ] На парковке нет машин, все существующие места свободны");
+		MessageBox::Show("На парковке нет машин, все существующие места свободны", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
 private: System::Void car_forward_button_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -543,18 +549,18 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 				log_listbox->Items->Add("Машина успешно припарковалась");
 			}
 			else {
-				log_listbox->Items->Add("На парковке нет свободного места!");
+				log_listbox->Items->Add("[ВНИМАНИЕ] На парковке нет свободного места!");
 				MessageBox::Show("Парковка полностью занята, невозможно проехать", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 			}
 		}
 		else {
-			log_listbox->Items->Add("Невозможно проехать, дорога закрыта");
+			log_listbox->Items->Add("[ВНИМАНИЕ] Невозможно проехать, дорога закрыта");
 			MessageBox::Show("Путь закрыт, невозможно проехать", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 		}
 	}
 	else {
-		log_listbox->Items->Add("Указан проезд для несуществующей машины");
-		MessageBox::Show("Указать проехать можно только существующей машине", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
+		log_listbox->Items->Add("[ВНИМАНИЕ] Проехать может только машина стоящая у въезда");
+		MessageBox::Show("Проехать может только машина стоящая у въезда", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
 	private: System::Void total_input_textbox_KeyPress(System::Object^ sender, System::Windows::Forms::KeyPressEventArgs^ e) {
