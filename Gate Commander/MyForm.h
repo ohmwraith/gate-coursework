@@ -100,6 +100,7 @@ namespace GateCommander {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MyForm::typeid));
 			this->toggle_visualisation_checkbox = (gcnew System::Windows::Forms::CheckBox());
 			this->gate_status_trackbar = (gcnew System::Windows::Forms::TrackBar());
 			this->log_listbox = (gcnew System::Windows::Forms::ListBox());
@@ -337,6 +338,7 @@ namespace GateCommander {
 			this->Controls->Add(this->manage_groupbox);
 			this->Controls->Add(this->settings_groupbox);
 			this->Controls->Add(this->log_listbox);
+			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 			this->Name = L"MyForm";
 			this->Text = L"Система управления";
 			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
