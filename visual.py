@@ -284,14 +284,7 @@ while running:
                     if dictionary.get('Direction') == "down":
                         car.move_to_parking()
             previous_data = data
-            try:
-                Interface.clean_interface(interface_path)
-            except PermissionError:
-                try:
-                    while not Interface.clean_interface(interface_path):
-                        print("Ожидание доступа")
-                except PermissionError:
-                    print("Не удалось получить доступ к файлу, синронизуйтесь и попробуйте отправлять запросы медленней")
+            Interface.clean_interface(interface_path)
     # Обновление
     all_sprites.update()
     screen.fill(BLACK)

@@ -1,11 +1,19 @@
 
 def get_content(way):
-    with open(way, "r") as interface:
-        return interface.read()
+    while True:
+        try:
+            with open(way, "r") as interface:
+                return interface.read()
+        except PermissionError:
+            print("Отказано в доступе")
 
 def get_lines(way):
-    with open(way, "r") as interface:
-        return interface.readlines()
+    while True:
+        try:
+            with open(way, "r") as interface:
+                return interface.readlines()
+        except PermissionError:
+            print("Отказано в доступе")
 def extract_data(data):
     array = []
     current_object_pointer = -1
@@ -21,7 +29,13 @@ def extract_data(data):
 
     return array
 def clean_interface(way):
-    with open(way, "w") as interface:
-        interface.truncate()
-        interface.close()
-    return True
+    flag = False
+    while not flag:
+        try:
+            with open(way, "w") as interface:
+                interface.truncate()
+                interface.close()
+                flag = True
+                return True
+        except PermissionError:
+            print("Отказано в доступе")
