@@ -364,6 +364,7 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 			if (TOTAL >= FREE) {
 				parking->set_total_places(TOTAL);
 				parking->set_occupied_places(TOTAL - FREE);
+				log_listbox->Items->Add("[НАСТРОЙКИ] Установлено: Всего - " + TOTAL.ToString() + ", Свободно - " + FREE.ToString());
 				if (VISUALS) parking->send_parametres();
 				manage_groupbox->Enabled = true;
 				INIT = true;
@@ -390,7 +391,7 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 	sa->Close();
 	if (toggle_visualisation_checkbox->Checked) {
 		VISUALS = true;
-		log_listbox->Items->Add("Визуализация включена.");
+		log_listbox->Items->Add("[НАСТРОЙКИ] Визуализация включена.");
 		parking->send_parametres();
 		gate->send_parametres();
 		if (WAITING_CAR) {
@@ -400,12 +401,12 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 		return;
 	}
 	VISUALS = false;
-	log_listbox->Items->Add("Визуализация выключена.");
+	log_listbox->Items->Add("[НАСТРОЙКИ] Визуализация выключена.");
 }
 private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
 	if (toggle_automation_checkbox->Checked && INIT) {
 		AUTOMATE = true;
-		log_listbox->Items->Add("[АВТОМАТ] Автоматизация включена.");
+		log_listbox->Items->Add("[НАСТРОЙКИ] Автоматизация включена.");
 		total_input_textbox->Enabled = false;
 		free_input_textbox->Enabled = false;
 		gate_status_trackbar->Enabled = false;
@@ -413,7 +414,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 		if (WAITING_CAR) {
 			gate_status_trackbar->Value = 1;
 			gate->open();
-			log_listbox->Items->Add("[АВТОМАТ] Ворота ОТКРЫТЫ");
+			log_listbox->Items->Add("[АВТОМАТ] Открытие шлагбаума");
 			gate->send_parametres();
 			Car^ car = gcnew Car(1);
 			car->send_forward();
@@ -421,7 +422,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 			Sleep(1000);
 			gate_status_trackbar->Value = 0;
 			gate->close();
-			log_listbox->Items->Add("[АВТОМАТ] Ворота ЗАКРЫТЫ");
+			log_listbox->Items->Add("[АВТОМАТ] Закрытие шлагбаума");
 			gate->send_parametres();
 			FREE--;
 			free_input_textbox->Text = FREE.ToString();
@@ -437,7 +438,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 		return;
 	}
 	AUTOMATE = false;
-	log_listbox->Items->Add("[АВТОМАТ] Автоматизация выключена.");
+	log_listbox->Items->Add("[НАСТРОЙКИ] Автоматизация выключена.");
 	total_input_textbox->Enabled = true;
 	free_input_textbox->Enabled = true;
 	gate_status_trackbar->Enabled = true;
@@ -453,7 +454,7 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 		int random_car_number = rand->Next(0, 999);
 		Car^ car = gcnew Car(rand->Next(0, 999));
 
-		log_listbox->Items->Add("Машина с номером " + car->get_car_number() + " ожидает у шлагбаума");
+		log_listbox->Items->Add("[СОБЫТИЕ] Машина " + car->get_car_number() + " у шлагбаума");
 		WAITING_CAR = true;
 		if (VISUALS) {
 			car->incoming_car_request();
@@ -463,14 +464,14 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 			if (parking->is_parking_avaliable()) {
 				gate_status_trackbar->Value = 1;
 				gate->open();
-				log_listbox->Items->Add("[АВТОМАТ] Ворота ОТКРЫТЫ");
+				log_listbox->Items->Add("[АВТОМАТ] Открытие шлагбаума");
 				gate->send_parametres();
 				car->send_forward();
 				log_listbox->Items->Add("[АВТОМАТ] Машина проезжает на парковку");
 				Sleep(1000);
 				gate_status_trackbar->Value = 0;
 				gate->close();
-				log_listbox->Items->Add("[АВТОМАТ] Ворота ЗАКРЫТЫ");
+				log_listbox->Items->Add("[АВТОМАТ] Закрытие шлагбаума");
 				gate->send_parametres();
 				FREE--;
 				free_input_textbox->Text = FREE.ToString();
@@ -479,23 +480,23 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 				WAITING_CAR = false;
 			}
 			else {
-				log_listbox->Items->Add("[АВТОМАТ] Машина ожидает свободного места на парковке");
+				log_listbox->Items->Add("[АВТОМАТ] Машина ожидает свободного места");
 			}
 		}
 	}
 	else {
-		log_listbox->Items->Add("[ВНИМАНИЕ] Невозможно создать машину - другая машина уже стоит у входа");
-		MessageBox::Show("Невозможно подъехать к воротам, пока у них стоит другая машина", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
+		log_listbox->Items->Add("[ВНИМАНИЕ] Другая машина уже стоит у входа");
+		MessageBox::Show("Невозможно создать машину, пока у шлагбаума стоит другая машина", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Asterisk);
 	}
 }
 private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System::EventArgs^ e) {
 	if (gate_status_trackbar->Value == 1) {
 		gate->open();
-		log_listbox->Items->Add("Ворота ОТКРЫТЫ");
+		log_listbox->Items->Add("[ШЛАГБАУМ] Проезд ОТКРЫТ");
 	}
 	else {
 		gate->close();
-		log_listbox->Items->Add("Ворота ЗАКРЫТЫ");
+		log_listbox->Items->Add("[ШЛАГБАУМ] Проезд ЗАКРЫТ");
 	}
 	if (VISUALS) gate->send_parametres();
 }
@@ -506,7 +507,7 @@ private: System::Void space_free_button_Click(System::Object^ sender, System::Ev
 		free_input_textbox->Text = FREE.ToString();
 		parking->set_occupied_places(TOTAL - FREE);
 		parking->send_parametres();
-		log_listbox->Items->Add("Парковочное место освобождено");
+		log_listbox->Items->Add("[ПАРКОВКА] Место освобождено");
 		if (VISUALS) {
 			car->leaving_car_request();
 			parking->send_parametres();
@@ -546,7 +547,7 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 				parking->set_occupied_places(TOTAL - FREE);
 				parking->send_parametres();
 				WAITING_CAR = false;
-				log_listbox->Items->Add("Машина успешно припарковалась");
+				log_listbox->Items->Add("[ПАРКОВКА] Машина припаркована");
 			}
 			else {
 				log_listbox->Items->Add("[ВНИМАНИЕ] На парковке нет свободного места!");
