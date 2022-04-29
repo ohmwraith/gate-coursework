@@ -20,7 +20,7 @@ public:
 	}
 	void send_parametres() {
 		try{
-			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+			System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
 			sa->WriteLine("Parking:");
 			sa->WriteLine("Total=" + total);
 			sa->WriteLine("Free=" + (total - occupied));
@@ -44,7 +44,7 @@ public:
 			occupied++;
 			return true;
 			try {
-				System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+				System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
 				sa->WriteLine("Parking:");
 				sa->WriteLine("Occupied=" + occupied);
 				sa->Close();
@@ -68,7 +68,7 @@ public:
 	}
 	void WriteInterface() {
 		try{
-			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+			System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
 			sa->WriteLine("Parking:");
 			sa->WriteLine("Total=" + total);
 			sa->Close();

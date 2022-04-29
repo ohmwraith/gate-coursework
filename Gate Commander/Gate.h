@@ -22,7 +22,7 @@ public:
 	}
 	void send_parametres() {
 		try {
-			System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+			System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
 			sa->WriteLine("Gate:");
 			sa->WriteLine("Opened=" + opened);
 			sa->Close();

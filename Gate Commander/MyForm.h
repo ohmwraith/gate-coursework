@@ -10,7 +10,7 @@
 
 void WriteInterface(System::String^ st) {
 	try {
-		System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+		System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
 		sa->WriteLine(st);
 		sa->Close();
 	}
@@ -385,7 +385,7 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 	}
 }
 private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
-	System::IO::StreamWriter^ sa = System::IO::File::AppendText("../Interface.txt");
+	System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
 	sa->WriteLine("Global:");
 	sa->WriteLine("Event=Clear");
 	sa->Close();
@@ -594,7 +594,7 @@ private: System::Void close_button_Click(System::Object^ sender, System::EventAr
 }
 private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	try {
-		System::IO::FileStream^ sa = System::IO::File::Create("../Interface.txt");
+		System::IO::FileStream^ sa = System::IO::File::Create("./Interface.txt");
 		sa->Close();
 	}
 	catch (System::IO::IOException^ e) {
