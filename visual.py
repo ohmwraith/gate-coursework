@@ -15,19 +15,12 @@ def is_commander_running():
             return True
     return False
 def search_interface(way):
-    output = None
-    for obj in os.listdir(path=way):
-        if obj == "Interface.txt":
-            output = way+obj
-            return output
-        elif obj.find('.') == -1 and obj != "venv":
-            way += '/'
-            if way == './' or  way == '/':
-                way = ''
-            output = search_interface(way + obj)
-            if output != False:
-                return output
-    return output
+    tree = list(os.walk(way))
+    for i in tree:
+        if "Interface.txt" in i[2]:
+            return i[0] + "\Interface.txt"
+    return None
+
 pygame.init()
 img_dir = "Sprites"
 #snd_dir = path.join(path.dirname(__file__), 'sounds')
