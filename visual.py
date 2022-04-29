@@ -22,7 +22,7 @@ def search_interface(way):
     return None
 
 pygame.init()
-img_dir = "Sprites"
+img_dir = "Assets/Sprites"
 #snd_dir = path.join(path.dirname(__file__), 'sounds')
 #vid_dir = path.join(path.dirname(__file__), 'videos')
 
@@ -61,7 +61,7 @@ for img in car_list:
 
 def draw_text(surf, text, size, x, y, color):
     font_name = pygame.font.match_font('Avenir Regular')
-    font_name = 'fonts/Metropolis-Bold.otf'
+    font_name = 'Assets/Fonts/Metropolis-Bold.otf'
     font = pygame.font.Font(font_name, size)
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
