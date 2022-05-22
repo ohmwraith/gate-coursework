@@ -7,8 +7,30 @@ from os import path
 import psutil
 import sys
 import time
+import socket
+import json
+import queue
+import threading
 
+def listen_socket(q):
+    sock = socket.socket()
+    sock.bind(('', 55000))
+    sock.listen(1)
+    conn, addr = sock.accept()
+    while True:
+        try:
+            data = conn.recv(1024)
+            js = json.loads(data.decode('utf-8').rstrip('\x00'))
+            conn.send(data.upper())
+        except ConnectionResetError:
+            print("Клиент отключился")
+            sock.listen(1)
+            conn, addr = sock.accept()
+        q.put(js)
 
+qe = queue.Queue()
+t = threading.Thread(target=listen_socket, args=[qe])
+t.start()
 def is_commander_running():
     for proc in psutil.process_iter():
         if "Gate Commander.exe" in str(proc.name):
@@ -187,6 +209,9 @@ exe_checking_last_time = time.time() - 3
 
 
 while running:
+    if not qe.empty():
+        js = qe.get()
+        print(js)
     clock.tick(FPS)
     #Проверка запущен ли командер
     if FIRST_CHECK_RUNNING:
