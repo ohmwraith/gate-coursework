@@ -14,7 +14,7 @@ using json = nlohmann::json;
 ref class Interface
 {
 protected:
-	Gate^ gate;
+	Gate^ gt;
 	SOCKET sock;
 public:
 	//Делегат для событий
@@ -61,10 +61,10 @@ public:
 			return;
 		}
 		else {
-			//MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
+			MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
 		}
-		gate->OPENED += gcnew Gate::GateEventHandler(this, &Interface::send_open_gate_data);
-		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Interface::send_close_gate_data);
+		gt->OPENED += gcnew Gate::GateEventHandler(this, &Interface::send_open_gate_data);
+		gt->CLOSED += gcnew Gate::GateEventHandler(this, &Interface::send_close_gate_data);
 	}
 
 	void send_open_gate_data() {
@@ -78,4 +78,3 @@ public:
 		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
 	}
 };
-

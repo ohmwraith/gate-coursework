@@ -368,7 +368,7 @@ bool AUTOMATE = false, VISUALS = false, INIT = false, WAITING_CAR = false;
 Parking^ parking = gcnew Parking(NULL, NULL);
 Gate^ gate = gcnew Gate(false);
 //Инициализация переменных сокета
-SOCKET sock;
+Interface^ sock = gcnew Interface();
 private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	try {
 		System::IO::FileStream^ sa = System::IO::File::Create("./Interface.txt");

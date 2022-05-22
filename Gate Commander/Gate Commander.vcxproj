@@ -28,12 +28,14 @@
   <ItemGroup>
     <ClCompile Include="Car.cpp" />
     <ClCompile Include="Gate.cpp" />
+    <ClCompile Include="Interface.cpp" />
     <ClCompile Include="MyForm.cpp" />
     <ClCompile Include="Parking.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Car.h" />
     <ClInclude Include="Gate.h" />
+    <ClInclude Include="Interface.h" />
     <ClInclude Include="MyForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
