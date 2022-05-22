@@ -5,14 +5,33 @@ ref class Gate
 private:
 	bool opened = false;
 public:
+	//Делегат для событий
+	delegate void GateEventHandler();
+	//Событие СОЗДАН
+	static event GateEventHandler^ CREATED;
+	//Событие ОТКРЫТО. Подписан метот проезда у машины
+	static event GateEventHandler^ OPENED;
+	//Событие ЗАКРЫТО. На него подписан метод остановки машины
+	static event GateEventHandler^ CLOSED;
+	// Событие изменения состояния экземпляра. На него подписан движок отрисовки.
+	static event GateEventHandler^ TOGGLED;
+	Gate(int open) {
+		opened = open;
+		CREATED();
+	}
+	property bool p_opened{
+		bool get() { return opened; };
+	}
 	double is_opened() {
 		return (opened ? true : false);
 	}
 	bool open() {
 		opened = true;
+		OPENED();
 		return true;
 	}
 	bool close() {
+		CLOSED();
 		opened = false;
 		return true;
 	}
