@@ -1,13 +1,47 @@
 #include<iostream>
 #include<stdio.h>
+#include <WinSock2.h>
 #include<Windows.h>
 #include<ctime>
 #include<cmath>
 #include"Car.h"
 #include"Gate.h"
 #include"Parking.h"
+#include <string>
+#include <WS2tcpip.h>
+#include <sstream>
+#include <iomanip>
+#include "nlohmann/json.hpp"
+
+#pragma comment(lib, "ws2_32.lib")
 //#include"Classes.cpp"
 
+// for convenience
+using json = nlohmann::json;
+
+std::string escape_json(const std::string& s) {
+	std::ostringstream o;
+	for (auto c = s.cbegin(); c != s.cend(); c++) {
+		switch (*c) {
+		case '"': o << "\\\""; break;
+		case '\\': o << "\\\\"; break;
+		case '\b': o << "\\b"; break;
+		case '\f': o << "\\f"; break;
+		case '\n': o << "\\n"; break;
+		case '\r': o << "\\r"; break;
+		case '\t': o << "\\t"; break;
+		default:
+			if ('\x00' <= *c && *c <= '\x1f') {
+				o << "\\u"
+					<< std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(*c);
+			}
+			else {
+				o << *c;
+			}
+		}
+	}
+	return o.str();
+}
 void WriteInterface(System::String^ st) {
 	try {
 		System::IO::StreamWriter^ sa = System::IO::File::AppendText("./Interface.txt");
@@ -18,6 +52,8 @@ void WriteInterface(System::String^ st) {
 		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 	}
 }
+
+
 #pragma once
 
 
@@ -29,6 +65,7 @@ namespace GateCommander {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace std;
 
 	/// <summary>
 	/// Сводка для MyForm
@@ -357,7 +394,58 @@ int TOTAL = NULL, FREE = NULL;
 bool AUTOMATE = false, VISUALS = false, INIT = false, WAITING_CAR = false;
 Parking^ parking = gcnew Parking(NULL, NULL);
 Gate^ gate = gcnew Gate();
+//Инициализация переменных сокета
+SOCKET sock;
+private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
+	string ipAddress = "127.0.0.1";			// IP Address of the server
+	int port = 54000;						// Listening port # on the server
 
+	// Initialize WinSock
+	WSAData data;
+	WORD ver = MAKEWORD(2, 2);
+	int wsResult = WSAStartup(ver, &data);
+	if (wsResult != 0)
+	{
+		cerr << "Can't start Winsock, Err #" << wsResult << endl;
+		return;
+	}
+
+	// Create socket
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET)
+	{
+		cerr << "Can't create socket, Err #" << WSAGetLastError() << endl;
+		WSACleanup();
+		return;
+	}
+
+	// Fill in a hint structure
+	sockaddr_in hint;
+	hint.sin_family = AF_INET;
+	hint.sin_port = htons(port);
+	inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
+
+	// Connect to server
+	int connResult = connect(sock, (sockaddr*)&hint, sizeof(hint));
+	if (connResult == SOCKET_ERROR)
+	{
+		cerr << "Can't connect to server, Err #" << WSAGetLastError() << endl;
+		closesocket(sock);
+		WSACleanup();
+		return;
+	}
+	else {
+		//MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
+	}
+
+	try {
+		System::IO::FileStream^ sa = System::IO::File::Create("./Interface.txt");
+		sa->Close();
+	}
+	catch (System::IO::IOException^ e) {
+		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+	}
+}
 private: System::Void apply_changes_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (!AUTOMATE) {
 		try {
@@ -593,15 +681,6 @@ private: System::Void free_input_textbox_TextChanged(System::Object^ sender, Sys
 }
 private: System::Void close_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	this->Close();
-}
-private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
-	try {
-		System::IO::FileStream^ sa = System::IO::File::Create("./Interface.txt");
-		sa->Close();
-	}
-	catch (System::IO::IOException^ e) {
-		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
-	}
 }
 };
 }
