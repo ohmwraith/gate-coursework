@@ -11,6 +11,9 @@ private:
 public:
 	//Делегат для событий
 	delegate void CarEventHandler();
+	delegate void CarCreatedHandler(int number, int color, int spd, int dir);
+	delegate void CarChangedHandler(int number, int color, int spd, int dir);
+	delegate void CarStatusHandler(int number, string status);
 	//Событие СОЗДАНА. На него подписаны методы Be_korm обоих классов рыбок
 	static event CarEventHandler^ CREATED;
 	//Событие РЯДОМ С ВОРОТАМИ. На него подписан метод проверки парковки и открытия ворот
@@ -18,7 +21,9 @@ public:
 	//Событие ЗА ВОРОТАМИ. На него подписан метод закрытия ворот
 	static event CarEventHandler^ AFTERGATE;
 	// Событие изменения состояния экземпляра. На него подписан движок отрисовки.
-	static event CarEventHandler^ CHANGED;
+	static event CarChangedHandler^ CHANGED;
+	static event CarStatusHandler^ STATUS;
+
 	Car(int n, int color, int spd, int dir) {
 		number = n;
 		color_id = color;
@@ -30,25 +35,25 @@ public:
 	}
 	property int p_number {
 		int get() { return number; };
-		void set(int new_number) { CHANGED(); number = new_number; };
+		//void set(int new_number) { CHANGED(number); number = new_number; };
 	}
 	property int p_color {
 		int get() { return color_id; };
-		void set(int new_color) { CHANGED(); color_id = new_color; };
+		void set(int new_color) { CHANGED(number, color_id, speed, direction); color_id = new_color; };
 	}
 	property int p_speed {
 		int get() { return speed; };
-		void set(int new_speed) { CHANGED(); color_id = new_speed; };
+		void set(int new_speed) { CHANGED(number, color_id, speed, direction); color_id = new_speed; };
 	}
 	property int p_direction {
 		int get() { return direction; };
-		void set(int new_direction) { CHANGED(); color_id = new_direction; };
+		void set(int new_direction) { CHANGED(number, color_id, speed, direction); color_id = new_direction; };
 	}
 	void go_throw_gate() {
-
+		STATUS(number, "goThrowGate");
 	}
 	void stop_near_gate() {
-		NEARGATE();
+		STATUS(number, "goToGate");
 	}
 	void incoming_car_request() {
 		try {

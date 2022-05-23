@@ -15,6 +15,7 @@ ref class Interface
 {
 protected:
 	Gate^ gate;
+	Car^ car;
 	SOCKET sock;
 public:
 	//Делегат для событий
@@ -63,9 +64,16 @@ public:
 		else {
 			MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
 		}
-		gate->OPENED += gcnew Gate::GateEventHandler(this, &Interface::send_open_gate_data);
-		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Interface::send_close_gate_data);
+		car->STATUS += gcnew Car::CarStatusHandler(this, &Interface::send_car_status);
 		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
+	}
+	void send_changed_car_parameters(int number, int color_id, int speed, int direction) {
+
+	}
+	void send_car_status(int number, string status) {
+		json j = json{ {"object", "car"}, {"status", status} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
 	}
 	void send_universal_gate_data(bool data) {
 		json j = json{ {"object", "gate"}, {"opened", data} };
