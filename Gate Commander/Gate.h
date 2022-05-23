@@ -7,6 +7,7 @@ private:
 public:
 	//Делегат для событий
 	delegate void GateEventHandler();
+	delegate void GateChangedHandler(bool NewStatus);
 	//Событие СОЗДАН
 	static event GateEventHandler^ CREATED;
 	//Событие ОТКРЫТО. Подписан метот проезда у машины
@@ -15,6 +16,7 @@ public:
 	static event GateEventHandler^ CLOSED;
 	// Событие изменения состояния экземпляра. На него подписан движок отрисовки.
 	static event GateEventHandler^ TOGGLED;
+	static event GateChangedHandler^ CHANGED;
 	Gate(int open) {
 		opened = open;
 		CREATED();
@@ -27,6 +29,7 @@ public:
 	}
 	bool open() {
 		opened = true;
+		CHANGED(opened);
 		OPENED();
 		return true;
 	}

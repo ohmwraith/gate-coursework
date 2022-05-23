@@ -65,8 +65,13 @@ public:
 		}
 		gate->OPENED += gcnew Gate::GateEventHandler(this, &Interface::send_open_gate_data);
 		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Interface::send_close_gate_data);
+		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
 	}
-
+	void send_universal_gate_data(bool data) {
+		json j = json{ {"object", "gate"}, {"opened", data} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+	}
 	void send_open_gate_data() {
 		json j = json{ {"object", "gate"}, {"opened", "true"} };
 		string userInput = j.dump();
