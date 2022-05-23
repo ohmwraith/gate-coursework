@@ -21,12 +21,12 @@ def listen_socket(q):
         try:
             data = conn.recv(1024)
             js = json.loads(data.decode('utf-8').rstrip('\x00'))
-            conn.send(data.upper())
+            #conn.send(data.upper())
+            q.put(js)
         except ConnectionResetError:
             print("Клиент отключился")
             sock.listen(1)
             conn, addr = sock.accept()
-        q.put(js)
 
 qe = queue.Queue()
 t = threading.Thread(target=listen_socket, args=[qe])

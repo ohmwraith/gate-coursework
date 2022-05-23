@@ -10,13 +10,18 @@ public:
 		total = t;
 		occupied = o;
 	}
-	int set_total_places(int tot) {
-		total = tot;
-		return total;
+	property int p_total {
+		int get() { return total; };
+		void set(int tot) { total = tot; }
+
 	}
-	int set_occupied_places(int occ) {
-		occupied = occ;
-		return occupied;
+	property int p_occupied {
+		int get() { return occupied; }
+		void set(int occ) { occupied = occ; }
+	}
+	property int p_free {
+		int get() { return total - occupied; }
+		void set(int fr) { occupied = total - fr; }
 	}
 	void send_parametres() {
 		try{
@@ -29,15 +34,6 @@ public:
 		catch (System::IO::IOException^ e) {
 			MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
-	}
-	int get_total_places() {
-		return total;
-	}
-	int get_occupied_places() {
-		return occupied;
-	}
-	int get_free_places() {
-		return total - occupied;
 	}
 	bool park_new_car() {
 		if (total - occupied > 0) {

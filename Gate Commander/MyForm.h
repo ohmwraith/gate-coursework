@@ -26,6 +26,12 @@ void WriteInterface(System::String^ st) {
 	}
 }
 
+//Метод, выдающий случайное целое число
+int getRandomNumber(int min, int max)
+{
+	static const double fraction = 1.0 / (static_cast<double>(RAND_MAX) + 1.0);
+	return static_cast<int>(rand() * fraction * (max - min + 1) + min);
+}
 
 #pragma once
 
@@ -45,9 +51,18 @@ namespace GateCommander {
 	/// </summary>
 	public ref class MyForm : public System::Windows::Forms::Form
 	{
+		Gate^ gate;
+		Car^ car;
+		Parking^ parking;
+		Interface^ sock;
 	public:
 		MyForm(void)
-		{
+		{	
+			int TOTAL = getRandomNumber(10, 1000), FREE = getRandomNumber(1, TOTAL);
+			parking = gcnew Parking(TOTAL, TOTAL - FREE);
+			gate = gcnew Gate(false);
+			//Инициализация переменных сокета
+			sock = gcnew Interface();
 			InitializeComponent();
 			//
 			//TODO: добавьте код конструктора
@@ -68,6 +83,7 @@ namespace GateCommander {
 	private: System::Windows::Forms::CheckBox^ toggle_visualisation_checkbox;
 	private: System::Windows::Forms::TrackBar^ gate_status_trackbar;
 	private: System::Windows::Forms::ListBox^ log_listbox;
+	private: System::Windows::Forms::Timer^ timer1;
 	protected:
 
 	protected:
@@ -110,7 +126,9 @@ namespace GateCommander {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			this->components = (gcnew System::ComponentModel::Container());
 			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MyForm::typeid));
+			this->timer1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->toggle_visualisation_checkbox = (gcnew System::Windows::Forms::CheckBox());
 			this->gate_status_trackbar = (gcnew System::Windows::Forms::TrackBar());
 			this->log_listbox = (gcnew System::Windows::Forms::ListBox());
@@ -133,6 +151,10 @@ namespace GateCommander {
 			this->settings_groupbox->SuspendLayout();
 			this->manage_groupbox->SuspendLayout();
 			this->SuspendLayout();
+			// 
+			// timer1
+			// 
+			this->timer1->Tick += gcnew System::EventHandler(this, &MyForm::timer1_Tick);
 			// 
 			// toggle_visualisation_checkbox
 			// 
@@ -364,11 +386,12 @@ namespace GateCommander {
 
 //Инициализация переменных
 int TOTAL = NULL, FREE = NULL;
-bool AUTOMATE = false, VISUALS = false, INIT = false, WAITING_CAR = false;
-Parking^ parking = gcnew Parking(NULL, NULL);
-Gate^ gate = gcnew Gate(false);
-//Инициализация переменных сокета
-Interface^ sock = gcnew Interface();
+bool AUTOMATE = false, VISUALS = false, INIT = true, WAITING_CAR = false;
+
+private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
+{
+
+}
 private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	try {
 		System::IO::FileStream^ sa = System::IO::File::Create("./Interface.txt");
@@ -384,8 +407,8 @@ private: System::Void apply_changes_button_Click(System::Object^ sender, System:
 			TOTAL = Convert::ToInt32(total_input_textbox->Text);
 			FREE = Convert::ToInt32(free_input_textbox->Text);
 			if (TOTAL >= FREE) {
-				parking->set_total_places(TOTAL);
-				parking->set_occupied_places(TOTAL - FREE);
+				parking->p_total = TOTAL;
+				parking->p_free = FREE;
 				log_listbox->Items->Add("[НАСТРОЙКИ] Установлено: Всего - " + TOTAL.ToString() + ", Свободно - " + FREE.ToString());
 				if (VISUALS) parking->send_parametres();
 				manage_groupbox->Enabled = true;
@@ -448,7 +471,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 			gate->send_parametres();
 			FREE--;
 			free_input_textbox->Text = FREE.ToString();
-			parking->set_occupied_places(TOTAL - FREE);
+			parking->p_free = FREE;
 			parking->send_parametres();
 			WAITING_CAR = false;
 		}
@@ -497,7 +520,7 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 				gate->send_parametres();
 				FREE--;
 				free_input_textbox->Text = FREE.ToString();
-				parking->set_occupied_places(TOTAL - FREE);
+				parking->p_free = FREE;
 				parking->send_parametres();
 				WAITING_CAR = false;
 			}
@@ -527,7 +550,7 @@ private: System::Void space_free_button_Click(System::Object^ sender, System::Ev
 		Car^ car = gcnew Car(11, 1, 2, 3);
 		FREE++;
 		free_input_textbox->Text = FREE.ToString();
-		parking->set_occupied_places(TOTAL - FREE);
+		parking->p_free = FREE;
 		parking->send_parametres();
 		log_listbox->Items->Add("[ПАРКОВКА] Место освобождено");
 		if (VISUALS) {
@@ -548,7 +571,7 @@ private: System::Void space_free_button_Click(System::Object^ sender, System::Ev
 			gate->send_parametres();
 			FREE--;
 			free_input_textbox->Text = FREE.ToString();
-			parking->set_occupied_places(TOTAL - FREE);
+			parking->p_free = FREE;
 			parking->send_parametres();
 			WAITING_CAR = false;
 		}
@@ -566,7 +589,7 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 				if (VISUALS) car->send_forward();
 				FREE--;
 				free_input_textbox->Text = FREE.ToString();
-				parking->set_occupied_places(TOTAL - FREE);
+				parking->p_free = FREE;
 				parking->send_parametres();
 				WAITING_CAR = false;
 				log_listbox->Items->Add("[ПАРКОВКА] Машина припаркована");
