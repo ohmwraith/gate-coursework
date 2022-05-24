@@ -2,12 +2,25 @@ using namespace System::Windows::Forms;
 #pragma once
 ref class Gate
 {
+protected:
+	void open() {
+		opened = true;
+		CHANGED(opened);
+		OPENED();
+	}
+	void close() {
+		opened = false;
+		CHANGED(opened);
+		CLOSED();
+	}
 private:
-	bool opened = false;
+	bool opened;
+
 public:
 	//Делегат для событий
 	delegate void GateEventHandler();
 	delegate void GateChangedHandler(bool NewStatus);
+	static event GateChangedHandler^ CHANGED;
 	//Событие СОЗДАН
 	static event GateEventHandler^ CREATED;
 	//Событие ОТКРЫТО. Подписан метот проезда у машины
@@ -16,7 +29,7 @@ public:
 	static event GateEventHandler^ CLOSED;
 	// Событие изменения состояния экземпляра. На него подписан движок отрисовки.
 	static event GateEventHandler^ TOGGLED;
-	static event GateChangedHandler^ CHANGED;
+
 	Gate(int open) {
 		opened = open;
 		CREATED();
@@ -27,17 +40,7 @@ public:
 	double is_opened() {
 		return (opened ? true : false);
 	}
-	bool open() {
-		opened = true;
-		CHANGED(opened);
-		OPENED();
-		return true;
-	}
-	bool close() {
-		CLOSED();
-		opened = false;
-		return true;
-	}
+
 	bool toggle() {
 		opened ? opened = false : opened = true;
 		return true;

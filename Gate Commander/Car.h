@@ -13,7 +13,7 @@ public:
 	delegate void CarEventHandler();
 	delegate void CarCreatedHandler(int number, int color, int spd, int dir);
 	delegate void CarChangedHandler(int number, int color, int spd, int dir);
-	delegate void CarStatusHandler(int number, string status);
+	delegate void CarStatusHandler(int number, int status);
 	//Событие СОЗДАНА. На него подписаны методы Be_korm обоих классов рыбок
 	static event CarEventHandler^ CREATED;
 	//Событие РЯДОМ С ВОРОТАМИ. На него подписан метод проверки парковки и открытия ворот
@@ -50,10 +50,10 @@ public:
 		void set(int new_direction) { CHANGED(number, color_id, speed, direction); color_id = new_direction; };
 	}
 	void go_throw_gate() {
-		STATUS(number, "goThrowGate");
+		STATUS(number, 2);
 	}
 	void stop_near_gate() {
-		STATUS(number, "goToGate");
+		STATUS(number, 1);
 	}
 	void incoming_car_request() {
 		try {

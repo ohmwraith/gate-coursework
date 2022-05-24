@@ -70,7 +70,7 @@ public:
 	void send_changed_car_parameters(int number, int color_id, int speed, int direction) {
 
 	}
-	void send_car_status(int number, string status) {
+	void send_car_status(int number, int status) {
 		json j = json{ {"object", "car"}, {"status", status} };
 		string userInput = j.dump();
 		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
