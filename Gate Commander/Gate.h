@@ -3,16 +3,7 @@ using namespace System::Windows::Forms;
 ref class Gate
 {
 protected:
-	void open() {
-		opened = true;
-		CHANGED(opened);
-		OPENED();
-	}
-	void close() {
-		opened = false;
-		CHANGED(opened);
-		CLOSED();
-	}
+
 private:
 	bool opened;
 
@@ -40,7 +31,14 @@ public:
 	double is_opened() {
 		return (opened ? true : false);
 	}
-
+	void open() {
+		opened = true;
+		CHANGED(opened);
+	}
+	void close() {
+		opened = false;
+		CHANGED(opened);
+	}
 	bool toggle() {
 		opened ? opened = false : opened = true;
 		return true;

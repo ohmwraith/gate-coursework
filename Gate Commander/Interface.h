@@ -17,6 +17,7 @@ protected:
 	Gate^ gate;
 	Car^ car;
 	SOCKET sock;
+	bool status;
 public:
 	//Делегат для событий
 	delegate void InterfaceEventHandler();
@@ -64,29 +65,25 @@ public:
 		else {
 			MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
 		}
+		car->CREATED += gcnew Car::CarCreatedHandler(this, &Interface::send_created_car_data);
 		car->STATUS += gcnew Car::CarStatusHandler(this, &Interface::send_car_status);
 		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
+	}
+	void send_created_car_data(int number, int color_id, int speed, int direction) {
+		json j = json{ {"object", "car"}, {"event", "created"}, {"number", number, "color_id", color_id, "speed", speed, "direction", direction} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
 	}
 	void send_changed_car_parameters(int number, int color_id, int speed, int direction) {
 
 	}
 	void send_car_status(int number, int status) {
-		json j = json{ {"object", "car"}, {"status", status} };
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", status} };
 		string userInput = j.dump();
 		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
 	}
 	void send_universal_gate_data(bool data) {
-		json j = json{ {"object", "gate"}, {"opened", data} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_open_gate_data() {
-		json j = json{ {"object", "gate"}, {"opened", "true"} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_close_gate_data() {
-		json j = json{ {"object", "gate"}, {"opened", "close"} };
+		json j = json{ {"object", "gate"}, {"event", "changed"}, {"opened", data, "color", "static"} };
 		string userInput = j.dump();
 		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
 	}

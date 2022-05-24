@@ -111,13 +111,14 @@ namespace GateCommander {
 	private: System::Windows::Forms::Button^ clear_log_button;
 	private: System::Windows::Forms::Button^ car_forward_button;
 	private: System::Windows::Forms::Button^ close_button;
+	private: System::ComponentModel::IContainer^ components;
 
 
 	private:
 		/// <summary>
 		/// Обязательная переменная конструктора.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -364,7 +365,7 @@ namespace GateCommander {
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(719, 363);
+			this->ClientSize = System::Drawing::Size(719, 370);
 			this->Controls->Add(this->close_button);
 			this->Controls->Add(this->clear_log_button);
 			this->Controls->Add(this->manage_groupbox);
@@ -385,13 +386,8 @@ namespace GateCommander {
 #pragma endregion
 
 //Инициализация переменных
-int TOTAL = NULL, FREE = NULL;
+int TOTAL = NULL, FREE = NULL, LAST_CAR_NUMBER;
 bool AUTOMATE = false, VISUALS = false, INIT = true, WAITING_CAR = false;
-
-private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
-{
-
-}
 private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	try {
 		System::IO::FileStream^ sa = System::IO::File::Create("./Interface.txt");
@@ -399,6 +395,42 @@ private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) 
 	}
 	catch (System::IO::IOException^ e) {
 		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+	}
+	timer1->Interval = 100;
+	timer1->Start();
+}
+private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
+{
+	if (!WAITING_CAR) {
+		if (getRandomNumber(0, 100) > 95) {
+			LAST_CAR_NUMBER = getRandomNumber(100, 999);
+			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
+			car->stop_near_gate();
+			WAITING_CAR = true;
+			Sleep(4000);
+			if (parking->is_parking_avaliable()) {
+				gate->open();
+			}
+			if (gate->p_opened) {
+				car->go_throw_gate();
+				Sleep(4000);
+				WAITING_CAR = FALSE;
+				gate->close();
+			}
+
+		}
+	}
+	else {
+		if (parking->is_parking_avaliable()) {
+			gate->open();
+		}
+		if (gate->p_opened) {
+			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
+			car->go_throw_gate();
+			Sleep(4000);
+			WAITING_CAR = FALSE;
+			gate->close();
+		}
 	}
 }
 private: System::Void apply_changes_button_Click(System::Object^ sender, System::EventArgs^ e) {

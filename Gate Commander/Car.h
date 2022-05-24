@@ -9,17 +9,13 @@ protected:
 private:
 	int number, color_id, speed, direction;
 public:
-	//Делегат для событий
+	//Делегаты для событий
 	delegate void CarEventHandler();
 	delegate void CarCreatedHandler(int number, int color, int spd, int dir);
 	delegate void CarChangedHandler(int number, int color, int spd, int dir);
 	delegate void CarStatusHandler(int number, int status);
-	//Событие СОЗДАНА. На него подписаны методы Be_korm обоих классов рыбок
-	static event CarEventHandler^ CREATED;
-	//Событие РЯДОМ С ВОРОТАМИ. На него подписан метод проверки парковки и открытия ворот
-	static event CarEventHandler^ NEARGATE;
-	//Событие ЗА ВОРОТАМИ. На него подписан метод закрытия ворот
-	static event CarEventHandler^ AFTERGATE;
+	//Событие СОЗДАНА.
+	static event CarCreatedHandler^ CREATED;
 	// Событие изменения состояния экземпляра. На него подписан движок отрисовки.
 	static event CarChangedHandler^ CHANGED;
 	static event CarStatusHandler^ STATUS;
@@ -29,7 +25,7 @@ public:
 		color_id = color;
 		speed = spd;
 		direction = dir;
-		CREATED();
+		CREATED(number, color_id, speed, direction);
 		gate->OPENED += gcnew Gate::GateEventHandler(this, &Car::go_throw_gate);
 		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Car::stop_near_gate);
 	}
