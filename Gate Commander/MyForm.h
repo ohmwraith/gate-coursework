@@ -44,6 +44,7 @@ namespace GateCommander {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::Collections::Generic;
 	using namespace std;
 
 	/// <summary>
@@ -56,6 +57,7 @@ namespace GateCommander {
 		Car^ car;
 		Parking^ parking;
 		Interface^ sock;
+		List <Car^>^ CarList;
 		int TOTAL = NULL, FREE = NULL;
 	public:
 		MyForm(void)
