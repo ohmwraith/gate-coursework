@@ -86,5 +86,5 @@ public:
 		json j = json{ {"object", "gate"}, {"event", "changed"}, {"opened", data, "color", "static"} };
 		string userInput = j.dump();
 		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
+	}	
 };

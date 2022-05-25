@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Car.cpp" />
+    <ClCompile Include="Card.cpp" />
     <ClCompile Include="Gate.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="MyForm.cpp" />
@@ -34,6 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Car.h" />
+    <ClInclude Include="Card.h" />
     <ClInclude Include="Gate.h" />
     <ClInclude Include="Interface.h" />
     <ClInclude Include="MyForm.h">

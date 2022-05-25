@@ -6,8 +6,9 @@ ref class Car
 protected:
 	//Поля (будут переданы по наследию)
 	Gate^ gate;
+	int number, color_id, speed, direction, status;
 private:
-	int number, color_id, speed, direction;
+
 public:
 	//Делегаты для событий
 	delegate void CarEventHandler();
@@ -16,15 +17,24 @@ public:
 	delegate void CarStatusHandler(int number, int status);
 	//Событие СОЗДАНА.
 	static event CarCreatedHandler^ CREATED;
-	// Событие изменения состояния экземпляра. На него подписан движок отрисовки.
+	// Событие изменения параметров машины. На него подписан движок отрисовки.
 	static event CarChangedHandler^ CHANGED;
+	// Событие изменения статуса машины
 	static event CarStatusHandler^ STATUS;
+	// Событие уничтожения машины. Вызывается, когда машина покидает область шлагбаума.
+	static event CarStatusHandler^ KILL;
 
 	Car(int n, int color, int spd, int dir) {
+		//Уникальный номер машины
 		number = n;
+		//Каждой машине присваивается свой цвет
 		color_id = color;
+		//Скорость каждой машины может отличаться
 		speed = spd;
+		//Направление движения машины (0 - на парковку, 1 - с парковки)
 		direction = dir;
+		//Положение машины (0 - на дороге(скрыта), 1 - у шлагбаума, 2 - после шлагбаума, 3 - скрылась на парковке)
+		status = 0;
 		CREATED(number, color_id, speed, direction);
 		gate->OPENED += gcnew Gate::GateEventHandler(this, &Car::go_throw_gate);
 		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Car::stop_near_gate);
@@ -45,11 +55,17 @@ public:
 		int get() { return direction; };
 		void set(int new_direction) { CHANGED(number, color_id, speed, direction); color_id = new_direction; };
 	}
+	//Отправляет команду на проезд машины через открытые ворота
 	void go_throw_gate() {
 		STATUS(number, 2);
 	}
+	//Отправляет команду подъехать к воротам и остановиться у них
 	void stop_near_gate() {
 		STATUS(number, 1);
+	}
+	//Отправляет команду на уничтожение экземпляра
+	void destroy() {
+		KILL(number, -1);
 	}
 	void incoming_car_request() {
 		try {
