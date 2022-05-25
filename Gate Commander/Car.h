@@ -11,7 +11,7 @@ private:
 
 public:
 	//Делегаты для событий
-	delegate void CarEventHandler();
+	delegate void CarEventHandler(int number);
 	delegate void CarCreatedHandler(int number, int color, int spd, int dir);
 	delegate void CarChangedHandler(int number, int color, int spd, int dir);
 	delegate void CarStatusHandler(int number, int status);
@@ -19,10 +19,12 @@ public:
 	static event CarCreatedHandler^ CREATED;
 	// Событие изменения параметров машины. На него подписан движок отрисовки.
 	static event CarChangedHandler^ CHANGED;
-	// Событие изменения статуса машины
-	static event CarStatusHandler^ STATUS;
 	// Событие уничтожения машины. Вызывается, когда машина покидает область шлагбаума.
 	static event CarStatusHandler^ KILL;
+	static event CarEventHandler^ goToGateEvent;
+	static event CarEventHandler^ goThrowGateEvent;
+	static event CarEventHandler^ goToParkEvent;
+
 
 	Car(int n, int color, int spd, int dir) {
 		//Уникальный номер машины
@@ -37,7 +39,7 @@ public:
 		status = 0;
 		CREATED(number, color_id, speed, direction);
 		gate->OPENED += gcnew Gate::GateEventHandler(this, &Car::go_throw_gate);
-		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Car::stop_near_gate);
+		gate->CLOSED += gcnew Gate::GateEventHandler(this, &Car::go_to_gate);
 	}
 	property int p_number {
 		int get() { return number; };
@@ -57,11 +59,14 @@ public:
 	}
 	//Отправляет команду на проезд машины через открытые ворота
 	void go_throw_gate() {
-		STATUS(number, 2);
+		goThrowGateEvent(number);
 	}
 	//Отправляет команду подъехать к воротам и остановиться у них
-	void stop_near_gate() {
-		STATUS(number, 1);
+	void go_to_gate() {
+		goToGateEvent(number);
+	}
+	void go_to_park() {
+		goToParkEvent(number);
 	}
 	//Отправляет команду на уничтожение экземпляра
 	void destroy() {

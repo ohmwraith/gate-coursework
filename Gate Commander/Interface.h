@@ -26,7 +26,9 @@ public:
 	static event InterfaceEventHandler^ SENDED;
 	Interface() {
 		car->CREATED += gcnew Car::CarCreatedHandler(this, &Interface::send_created_car_data);
-		car->STATUS += gcnew Car::CarStatusHandler(this, &Interface::send_car_status);
+		car->goToGateEvent += gcnew Car::CarEventHandler(this, &Interface::send_car_goToGate);
+		car->goThrowGateEvent += gcnew Car::CarEventHandler(this, &Interface::send_car_goThrowGate);
+		car->goToParkEvent += gcnew Car::CarEventHandler(this, &Interface::send_car_goToPark);
 		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
 	}
 	void connect_visuals() {
@@ -81,6 +83,21 @@ public:
 	}
 	void send_car_status(int number, int status) {
 		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", status} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+	}
+	void send_car_goToGate(int number) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goToGate"} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+	}
+	void send_car_goThrowGate(int number) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goThrowGate"} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+	}
+	void send_car_goToPark(int number) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goToPark"} };
 		string userInput = j.dump();
 		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
 	}

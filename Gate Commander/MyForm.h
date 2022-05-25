@@ -411,7 +411,7 @@ private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 			LAST_CAR_NUMBER = getRandomNumber(100, 999);
 			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
 			Sleep(50);
-			car->stop_near_gate();
+			car->go_to_gate();
 			Sleep(50);
 			WAITING_CAR = true;
 			if (parking->is_parking_avaliable()) {
