@@ -63,6 +63,7 @@ namespace GateCommander {
 			gate = gcnew Gate(false);
 			//Инициализация переменных сокета
 			sock = gcnew Interface();
+			sock->connect_visuals();
 			InitializeComponent();
 			//
 			//TODO: добавьте код конструктора
@@ -396,24 +397,22 @@ private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) 
 	catch (System::IO::IOException^ e) {
 		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 	}
-	timer1->Interval = 100;
+	timer1->Interval = 4000;
 	timer1->Start();
 }
 private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 {
 	if (!WAITING_CAR) {
-		if (getRandomNumber(0, 100) > 95) {
+		if (getRandomNumber(0, 100) > 0) {
 			LAST_CAR_NUMBER = getRandomNumber(100, 999);
 			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
 			car->stop_near_gate();
 			WAITING_CAR = true;
-			Sleep(4000);
 			if (parking->is_parking_avaliable()) {
 				gate->open();
 			}
 			if (gate->p_opened) {
 				car->go_throw_gate();
-				Sleep(4000);
 				WAITING_CAR = FALSE;
 				gate->close();
 			}
@@ -427,7 +426,6 @@ private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 		if (gate->p_opened) {
 			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
 			car->go_throw_gate();
-			Sleep(4000);
 			WAITING_CAR = FALSE;
 			gate->close();
 		}
@@ -483,6 +481,7 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
 	if (toggle_automation_checkbox->Checked && INIT) {
 		AUTOMATE = true;
+		sock->connect_visuals();
 		log_listbox->Items->Add("[НАСТРОЙКИ] Автоматизация включена.");
 		total_input_textbox->Enabled = false;
 		free_input_textbox->Enabled = false;

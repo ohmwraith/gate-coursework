@@ -25,6 +25,11 @@ public:
 	static event InterfaceEventHandler^ CREATED;
 	static event InterfaceEventHandler^ SENDED;
 	Interface() {
+		car->CREATED += gcnew Car::CarCreatedHandler(this, &Interface::send_created_car_data);
+		car->STATUS += gcnew Car::CarStatusHandler(this, &Interface::send_car_status);
+		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
+	}
+	void connect_visuals() {
 		string ipAddress = "127.0.0.1";			// IP Address of the server
 		int port = 55000;						// Listening port # on the server
 
@@ -65,9 +70,6 @@ public:
 		else {
 			MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
 		}
-		car->CREATED += gcnew Car::CarCreatedHandler(this, &Interface::send_created_car_data);
-		car->STATUS += gcnew Car::CarStatusHandler(this, &Interface::send_car_status);
-		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
 	}
 	void send_created_car_data(int number, int color_id, int speed, int direction) {
 		json j = json{ {"object", "car"}, {"event", "created"}, {"number", number, "color_id", color_id, "speed", speed, "direction", direction} };
