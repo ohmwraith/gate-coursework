@@ -51,19 +51,22 @@ namespace GateCommander {
 	/// </summary>
 	public ref class MyForm : public System::Windows::Forms::Form
 	{
+	private:
 		Gate^ gate;
 		Car^ car;
 		Parking^ parking;
 		Interface^ sock;
+		int TOTAL = NULL, FREE = NULL;
 	public:
 		MyForm(void)
 		{	
-			int TOTAL = getRandomNumber(10, 1000), FREE = getRandomNumber(1, TOTAL);
+			TOTAL = getRandomNumber(10, 1000);
+			FREE = getRandomNumber(1, TOTAL);
 			parking = gcnew Parking(TOTAL, TOTAL - FREE);
 			gate = gcnew Gate(false);
 			//Инициализация переменных сокета
 			sock = gcnew Interface();
-			sock->connect_visuals();
+			//sock->connect_visuals();
 			InitializeComponent();
 			//
 			//TODO: добавьте код конструктора
@@ -263,7 +266,6 @@ namespace GateCommander {
 			// toggle_automation_checkbox
 			// 
 			this->toggle_automation_checkbox->AutoSize = true;
-			this->toggle_automation_checkbox->Enabled = false;
 			this->toggle_automation_checkbox->Location = System::Drawing::Point(258, 22);
 			this->toggle_automation_checkbox->Name = L"toggle_automation_checkbox";
 			this->toggle_automation_checkbox->Size = System::Drawing::Size(95, 24);
@@ -387,7 +389,7 @@ namespace GateCommander {
 #pragma endregion
 
 //Инициализация переменных
-int TOTAL = NULL, FREE = NULL, LAST_CAR_NUMBER;
+int LAST_CAR_NUMBER;
 bool AUTOMATE = false, VISUALS = false, INIT = true, WAITING_CAR = false;
 private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
 	try {
@@ -397,6 +399,8 @@ private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) 
 	catch (System::IO::IOException^ e) {
 		MessageBox::Show("Возникла ошибка чтения интерфейса, это не отразится на функциональности программы, рекомендуется заново включить визуализацию", "Внимание", MessageBoxButtons::OK, MessageBoxIcon::Warning);
 	}
+	total_input_textbox->Text = TOTAL.ToString();
+	free_input_textbox->Text = FREE.ToString();
 	timer1->Interval = 4000;
 	timer1->Start();
 }
@@ -406,15 +410,20 @@ private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 		if (getRandomNumber(0, 100) > 0) {
 			LAST_CAR_NUMBER = getRandomNumber(100, 999);
 			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
+			Sleep(50);
 			car->stop_near_gate();
+			Sleep(50);
 			WAITING_CAR = true;
 			if (parking->is_parking_avaliable()) {
 				gate->open();
+				Sleep(50);
 			}
 			if (gate->p_opened) {
 				car->go_throw_gate();
+				Sleep(50);
 				WAITING_CAR = FALSE;
 				gate->close();
+				Sleep(50);
 			}
 
 		}
@@ -422,12 +431,16 @@ private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 	else {
 		if (parking->is_parking_avaliable()) {
 			gate->open();
+			Sleep(50);
 		}
 		if (gate->p_opened) {
 			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
+			Sleep(50);
 			car->go_throw_gate();
+			Sleep(50);
 			WAITING_CAR = FALSE;
 			gate->close();
+			Sleep(50);
 		}
 	}
 }

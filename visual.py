@@ -27,6 +27,19 @@ def listen_socket(q):
             print("Клиент отключился")
             sock.listen(1)
             conn, addr = sock.accept()
+        except json.decoder.JSONDecodeError:
+            print("Исключение JSON")
+            print(data.decode('utf-8').rstrip('\x00'))
+            temp_arr = data.decode('utf-8').rstrip('\x00').split(" ")
+            print("--------------------")
+            for i in temp_arr:
+                print(i)
+            print("--------------------")
+            for i in temp_arr:
+                print(json.loads(i))
+            print("--------------------")
+            continue
+
 
 qe = queue.Queue()
 t = threading.Thread(target=listen_socket, args=[qe])
