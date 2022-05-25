@@ -1,14 +1,20 @@
-using namespace System::Windows::Forms;
 #pragma once
+#include "Car.cpp"
+using namespace System::Windows::Forms;
+
 ref class Parking
 {
 private:
 	int total;
 	int occupied;
+	Car^ car;
 public:
+	delegate void ParkEventHandler();
+	static event ParkEventHandler^ letCarIn;
 	Parking(int t, int o) {
 		total = t;
 		occupied = o;
+		car->tookWaitPosEvent += gcnew Car::CarEventHandler(this, &Parking::can_car_enter);
 	}
 	property int p_total {
 		int get() { return total; };
@@ -22,6 +28,9 @@ public:
 	property int p_free {
 		int get() { return total - occupied; }
 		void set(int fr) { occupied = total - fr; }
+	}
+	void can_car_enter() {
+		if (total > occupied) letCarIn();
 	}
 	void send_parametres() {
 		try{

@@ -58,10 +58,11 @@ namespace GateCommander {
 		Parking^ parking;
 		Interface^ sock;
 		List <Car^>^ CarList;
-		int TOTAL = NULL, FREE = NULL;
+		int TOTAL = NULL, FREE = NULL, HEIGHT = 1024, FPS = 60;
 	public:
 		MyForm(void)
 		{	
+			CarList = gcnew List<Car^>(0);
 			TOTAL = getRandomNumber(10, 1000);
 			FREE = getRandomNumber(1, TOTAL);
 			parking = gcnew Parking(TOTAL, TOTAL - FREE);
@@ -403,29 +404,25 @@ private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) 
 	}
 	total_input_textbox->Text = TOTAL.ToString();
 	free_input_textbox->Text = FREE.ToString();
-	timer1->Interval = 4000;
+	timer1->Interval = 1000 / FPS;
 	timer1->Start();
 }
 private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 {
-	if (!WAITING_CAR) {
+	if (CarList->Count == 0) {
 		if (getRandomNumber(0, 100) > 0) {
 			LAST_CAR_NUMBER = getRandomNumber(100, 999);
-			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
-			Sleep(50);
+			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 10, HEIGHT);
+			CarList->Add(car);
 			car->go_to_gate();
-			Sleep(50);
 			WAITING_CAR = true;
 			if (parking->is_parking_avaliable()) {
 				gate->open();
-				Sleep(50);
 			}
 			if (gate->p_opened) {
 				car->go_throw_gate();
-				Sleep(50);
 				WAITING_CAR = FALSE;
 				gate->close();
-				Sleep(50);
 			}
 
 		}
@@ -433,17 +430,17 @@ private: System::Void timer1_Tick(System::Object^ sender, System::EventArgs^ e)
 	else {
 		if (parking->is_parking_avaliable()) {
 			gate->open();
-			Sleep(50);
 		}
 		if (gate->p_opened) {
-			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, 3);
-			Sleep(50);
+			Car^ car = gcnew Car(LAST_CAR_NUMBER, 1, 2, HEIGHT);
 			car->go_throw_gate();
-			Sleep(50);
 			WAITING_CAR = FALSE;
 			gate->close();
-			Sleep(50);
 		}
+	}
+	for each (Car ^ car in CarList)
+	{
+		car->update();
 	}
 }
 private: System::Void apply_changes_button_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -485,7 +482,7 @@ private: System::Void toggle_visualisation_checkbox_CheckedChanged(System::Objec
 		parking->send_parametres();
 		gate->send_parametres();
 		if (WAITING_CAR) {
-			Car^ car = gcnew Car(11, 1, 2, 3);
+			Car^ car = gcnew Car(11, 1, 2, HEIGHT);
 			car->incoming_car_request();
 		}
 		return;
@@ -507,7 +504,7 @@ private: System::Void toggle_automation_checkbox_CheckedChanged(System::Object^ 
 			gate->open();
 			log_listbox->Items->Add("[АВТОМАТ] Открытие шлагбаума");
 			gate->send_parametres();
-			Car^ car = gcnew Car(1, 1, 2, 3);
+			Car^ car = gcnew Car(1, 1, 2, HEIGHT);
 			car->send_forward();
 			log_listbox->Items->Add("[АВТОМАТ] Машина проезжает на парковку");
 			Sleep(1000);
@@ -543,7 +540,7 @@ private: System::Void car_create_button_Click(System::Object^ sender, System::Ev
 	if (!WAITING_CAR) {
 		Random^ rand = gcnew Random;
 		int random_car_number = rand->Next(0, 999);
-		Car^ car = gcnew Car(rand->Next(0, 999), 1, 2, 3);
+		Car^ car = gcnew Car(rand->Next(0, 999), 1, 2, HEIGHT);
 
 		log_listbox->Items->Add("[СОБЫТИЕ] Машина " + car->p_number + " у шлагбаума");
 		WAITING_CAR = true;
@@ -593,7 +590,7 @@ private: System::Void gate_status_trackbar_Scroll(System::Object^ sender, System
 }
 private: System::Void space_free_button_Click(System::Object^ sender, System::EventArgs^ e) {
 	if (FREE != TOTAL) {
-		Car^ car = gcnew Car(11, 1, 2, 3);
+		Car^ car = gcnew Car(11, 1, 2, HEIGHT);
 		FREE++;
 		free_input_textbox->Text = FREE.ToString();
 		parking->p_free = FREE;
@@ -631,7 +628,7 @@ private: System::Void car_forward_button_Click(System::Object^ sender, System::E
 	if (WAITING_CAR) {
 		if (gate->is_opened()) {
 			if (parking->is_parking_avaliable()) {
-				Car^ car = gcnew Car(11, 1, 2, 3);
+				Car^ car = gcnew Car(11, 1, 2, HEIGHT);
 				if (VISUALS) car->send_forward();
 				FREE--;
 				free_input_textbox->Text = FREE.ToString();

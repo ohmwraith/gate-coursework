@@ -26,10 +26,53 @@ public:
 	static event InterfaceEventHandler^ SENDED;
 	Interface() {
 		car->CREATED += gcnew Car::CarCreatedHandler(this, &Interface::send_created_car_data);
-		car->goToGateEvent += gcnew Car::CarEventHandler(this, &Interface::send_car_goToGate);
-		car->goThrowGateEvent += gcnew Car::CarEventHandler(this, &Interface::send_car_goThrowGate);
-		car->goToParkEvent += gcnew Car::CarEventHandler(this, &Interface::send_car_goToPark);
+		car->yPosChangedEvent += gcnew Car::CarPositionHandler(this, &Interface::send_car_position);
 		gate->CHANGED += gcnew Gate::GateChangedHandler(this, &Interface::send_universal_gate_data);
+	}
+	void send_car_position(int number, int yPos) {
+		json j = json{ {"object", "car"}, {"event", "changedPosition"}, {"number", number, "yPos", yPos} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
+	}
+	void send_created_car_data(int number, int color_id, int speed) {
+		json j = json{ {"object", "car"}, {"event", "created"}, {"number", number, "color_id", color_id, "speed", speed} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
+	}
+	void send_changed_car_parameters(int number, int color_id, int speed) {
+
+	}
+	void send_car_status(int number, int status) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", status} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
+	}
+	void send_car_goToGate(int number) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goToGate"} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
+	}
+	void send_car_goThrowGate(int number) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goThrowGate"} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
+	}
+	void send_car_goToPark(int number) {
+		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goToPark"} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
+	}
+	void send_universal_gate_data(bool data) {
+		json j = json{ {"object", "gate"}, {"event", "changed"}, {"opened", data, "color", "static"} };
+		string userInput = j.dump();
+		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+		Sleep(50);
 	}
 	void connect_visuals() {
 		string ipAddress = "127.0.0.1";			// IP Address of the server
@@ -73,37 +116,4 @@ public:
 			MessageBox::Show("Congrats", "Connection established!", MessageBoxButtons::OK);
 		}
 	}
-	void send_created_car_data(int number, int color_id, int speed, int direction) {
-		json j = json{ {"object", "car"}, {"event", "created"}, {"number", number, "color_id", color_id, "speed", speed, "direction", direction} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_changed_car_parameters(int number, int color_id, int speed, int direction) {
-
-	}
-	void send_car_status(int number, int status) {
-		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", status} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_car_goToGate(int number) {
-		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goToGate"} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_car_goThrowGate(int number) {
-		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goThrowGate"} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_car_goToPark(int number) {
-		json j = json{ {"object", "car"}, {"event", "changingStatus"}, {"number", number, "status", "goToPark"} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}
-	void send_universal_gate_data(bool data) {
-		json j = json{ {"object", "gate"}, {"event", "changed"}, {"opened", data, "color", "static"} };
-		string userInput = j.dump();
-		int sendResult = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-	}	
 };

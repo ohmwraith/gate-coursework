@@ -1,12 +1,16 @@
-using namespace System::Windows::Forms;
 #pragma once
+#include "Car.cpp"
+#include "Parking.cpp"
+using namespace System::Windows::Forms;
+
 ref class Gate
 {
 protected:
 
 private:
 	bool opened;
-
+	Car^ car;
+	Parking^ parking;
 public:
 	//Делегат для событий
 	delegate void GateEventHandler();
@@ -24,6 +28,8 @@ public:
 	Gate(int open) {
 		opened = open;
 		CREATED();
+		car->tookAfterGatePosEvent += gcnew Car::CarEventHandler(this, &Gate::close);
+		parking->letCarIn += gcnew Parking::ParkEventHandler(this, &Gate::open);
 	}
 	property bool p_opened{
 		bool get() { return opened; };
